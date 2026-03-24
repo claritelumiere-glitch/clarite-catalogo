@@ -1,0 +1,34 @@
+# Dependencies
+node_modules/
+.pnp
+.pnp.js
+
+# Next.js
+app/.next/
+app/out/
+app/build/
+
+# Env files — NUNCA subir secrets
+.env.local
+.env.*.local
+app/.env.local
+app/.env.*.local
+
+# Vercel
+.vercel
+
+# TypeScript
+*.tsbuildinfo
+app/next-env.d.ts
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+npm-debug.log*
+
+# Claude Code local config (contém tokens e permissões locais)
+.claude/
+.mcp.json
