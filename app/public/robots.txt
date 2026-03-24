@@ -1,0 +1,3 @@
+User-agent: *
+Allow: /catalogo
+Disallow: /admin
