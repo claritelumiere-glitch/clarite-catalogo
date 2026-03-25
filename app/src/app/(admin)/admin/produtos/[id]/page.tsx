@@ -48,17 +48,22 @@ export default function EditarProdutoPage({ params }: PageProps) {
   async function handleImageUpload(files: FileList) {
     setUploadingImages(true);
     setError(null);
-    const supabase = createClient();
-    const urls: string[] = [];
 
-    for (const file of Array.from(files)) {
+    const fileArray = Array.from(files);
+
+    // Validate all files first before uploading any
+    for (const file of fileArray) {
       const validationError = validateImageFile(file);
       if (validationError) {
         setError(validationError);
         setUploadingImages(false);
         return;
       }
+    }
 
+    const supabase = createClient();
+
+    for (const file of fileArray) {
       const ext = file.name.split(".").pop();
       const fileName = `produtos/${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
 
@@ -67,16 +72,15 @@ export default function EditarProdutoPage({ params }: PageProps) {
         .upload(fileName, file, { cacheControl: "31536000", upsert: false });
 
       if (uploadError) {
-        setError(`Erro ao fazer upload: ${uploadError.message}`);
+        setError(`Erro ao fazer upload de "${file.name}": ${uploadError.message}`);
         setUploadingImages(false);
         return;
       }
 
       const { data } = supabase.storage.from("imagens").getPublicUrl(fileName);
-      urls.push(data.publicUrl);
+      setImagensUrls((prev) => [...prev, data.publicUrl]);
     }
 
-    setImagensUrls((prev) => [...prev, ...urls]);
     setUploadingImages(false);
   }
 

@@ -48,7 +48,8 @@ function buildPaginationItems(pagina: number, totalPaginas: number): (number | "
 
 export default async function CatalogoPage({ searchParams }: PageProps) {
   const params = await searchParams;
-  const buscaSanitizada = (params.busca ?? "").slice(0, 100).trim();
+  const buscaRaw = (params.busca ?? "").trim();
+  const buscaSanitizada = (buscaRaw === "undefined" ? "" : buscaRaw).slice(0, 100);
   const pagina = Math.max(1, Number(params.pagina ?? 1));
   const offset = (pagina - 1) * PER_PAGE;
 
@@ -140,7 +141,7 @@ export default async function CatalogoPage({ searchParams }: PageProps) {
                     ) : (
                       <a
                         key={item}
-                        href={`/catalogo?${new URLSearchParams({ ...params, busca: buscaSanitizada || undefined as any, pagina: String(item) })}`}
+                        href={`/catalogo?${(() => { const p = new URLSearchParams(); if (buscaSanitizada) p.set("busca", buscaSanitizada); if (params.categoria) p.set("categoria", params.categoria); p.set("pagina", String(item)); return p; })()}`}
                         className={`w-9 h-9 flex items-center justify-center rounded text-sm border transition-colors ${
                           item === pagina
                             ? "bg-[#6B2D8B] text-white border-[#6B2D8B]"

@@ -41,7 +41,7 @@ function FiltrosForm({
         <input
           type="search"
           placeholder="Nome ou código..."
-          defaultValue={searchParams.get("busca") ?? ""}
+          defaultValue={searchParams.get("busca") === "undefined" ? "" : (searchParams.get("busca") ?? "")}
           onChange={(e) => updateParam("busca", e.target.value)}
           className="w-full border border-gray-200 rounded px-3 py-2 text-sm focus:outline-none focus:border-[#6B2D8B] transition-colors"
         />
