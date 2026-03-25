@@ -4,22 +4,19 @@ node_modules/
 .pnp.js
 
 # Next.js
-app/.next/
-app/out/
-app/build/
+.next/
+out/
+build/
 
 # Env files — NUNCA subir secrets
-.env.local
-.env.*.local
-app/.env.local
-app/.env.*.local
+.env*
 
 # Vercel
 .vercel
 
 # TypeScript
 *.tsbuildinfo
-app/next-env.d.ts
+next-env.d.ts
 
 # OS
 .DS_Store
@@ -29,6 +26,12 @@ Thumbs.db
 *.log
 npm-debug.log*
 
-# Claude Code local config (contém tokens e permissões locais)
+# Claude Code local config
 .claude/
 .mcp.json
+
+# Pastas locais (não fazem parte do deploy)
+app/
+templates/
+upload_images.mjs
+.planning/
