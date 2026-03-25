@@ -31,7 +31,7 @@ npm-debug.log*
 .mcp.json
 
 # Pastas locais (não fazem parte do deploy)
-app/
+/app/
 templates/
 upload_images.mjs
 .planning/

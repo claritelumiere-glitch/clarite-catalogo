@@ -39,7 +39,8 @@ export default async function ProdutosPage({ searchParams }: PageProps) {
   if (params.status === "ativo") query = query.eq("ativo", true);
   if (params.status === "inativo") query = query.eq("ativo", false);
   if (params.busca) {
-    query = query.or(`nome.ilike.%${params.busca}%,codigo.ilike.%${params.busca}%`);
+    const buscaEscapada = params.busca.slice(0, 100).replace(/[%_\\]/g, "\\$&");
+    query = query.or(`nome.ilike.%${buscaEscapada}%,codigo.ilike.%${buscaEscapada}%`);
   }
 
   const { data: produtosRaw, count } = await query;
@@ -48,50 +49,61 @@ export default async function ProdutosPage({ searchParams }: PageProps) {
 
   return (
     <div>
-      <div className="flex items-center justify-between mb-6">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
         <div>
-          <h1 className="font-serif text-2xl text-gray-900 font-semibold">Produtos</h1>
-          <p className="text-gray-400 text-sm mt-0.5">{count ?? 0} produtos no total</p>
+          <h1 className="font-serif text-3xl text-gray-900 font-bold tracking-tight">Produtos</h1>
+          <p className="text-gray-500 text-sm mt-1">{count ?? 0} peças cadastradas na coleção.</p>
         </div>
         <div className="flex items-center gap-3">
           <ExportarCSVButton />
           <Link
             href="/admin/produtos/novo"
-            className="bg-[#6B2D8B] hover:bg-[#9B2C8A] text-white text-sm font-medium px-5 py-2.5 rounded-lg transition-colors"
+            className="group relative overflow-hidden bg-gradient-brand text-white text-sm font-bold px-6 py-2.5 rounded-lg transition-all shadow-lg hover:shadow-[#6B2D8B]/40 flex items-center gap-2 transform hover:-translate-y-0.5 border border-white/10"
           >
-            + Novo Produto
+            <span className="relative z-10 flex items-center gap-2">
+              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+              </svg>
+              Novo Produto
+            </span>
+            <div className="absolute inset-0 h-full w-full bg-white/20 -translate-x-full group-hover:animate-[shimmer_1.5s_infinite] z-0" />
           </Link>
         </div>
       </div>
 
       {/* Search */}
-      <form className="mb-4 flex gap-3">
-        <input
-          name="busca"
-          type="search"
-          defaultValue={params.busca}
-          placeholder="Buscar por nome ou código..."
-          className="flex-1 border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-[#6B2D8B] transition-colors"
-        />
+      <form className="mb-6 flex gap-3">
+        <div className="relative flex-1">
+          <svg className="w-5 h-5 absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+          </svg>
+          <input
+            name="busca"
+            type="search"
+            defaultValue={params.busca}
+            placeholder="Buscar peça por nome ou código..."
+            className="w-full border border-gray-200 rounded-lg pl-10 pr-4 py-2.5 text-sm focus:outline-none focus:border-[#D4A017] focus:ring-1 focus:ring-[#D4A017] transition-all shadow-sm"
+          />
+        </div>
         <button
           type="submit"
-          className="bg-[#6B2D8B] text-white px-4 py-2 rounded-lg text-sm hover:bg-[#9B2C8A] transition-colors"
+          className="bg-gray-900 text-white font-medium tracking-wide uppercase text-xs px-6 py-2.5 rounded-lg hover:bg-[#6B2D8B] transition-colors shadow-sm"
         >
-          Buscar
+          Filtrar
         </button>
       </form>
 
       {/* Table */}
-      <div className="bg-white border border-gray-200 rounded-xl overflow-hidden">
+      <div className="bg-white border border-gray-100 rounded-2xl overflow-hidden shadow-[0_4px_20px_rgb(0,0,0,0.03)]">
         <table className="w-full text-sm">
           <thead>
-            <tr className="border-b border-gray-100 bg-gray-50">
-              <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider">Produto</th>
-              <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider hidden md:table-cell">Categoria</th>
-              <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider hidden sm:table-cell">Código</th>
-              <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider">Preço</th>
-              <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-              <th className="px-4 py-3"></th>
+            <tr className="border-b border-gray-100 bg-[#FAFAFA]">
+              <th className="text-left px-5 py-4 text-[10px] font-bold text-gray-500 uppercase tracking-widest">Peça</th>
+              <th className="text-left px-5 py-4 text-[10px] font-bold text-gray-500 uppercase tracking-widest hidden md:table-cell">Coleção (Cat)</th>
+              <th className="text-left px-5 py-4 text-[10px] font-bold text-gray-500 uppercase tracking-widest hidden sm:table-cell">REF</th>
+              <th className="text-left px-5 py-4 text-[10px] font-bold text-gray-500 uppercase tracking-widest">Valor</th>
+              <th className="text-left px-5 py-4 text-[10px] font-bold text-gray-500 uppercase tracking-widest">Status</th>
+              <th className="px-5 py-4"></th>
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-100">

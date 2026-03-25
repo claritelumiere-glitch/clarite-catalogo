@@ -4,33 +4,48 @@ import { createClient } from "@/lib/supabase/server";
 
 async function AdminSidebar() {
   return (
-    <aside className="w-56 bg-[#6B2D8B] min-h-screen flex flex-col">
-      <div className="p-5 border-b border-white/10">
-        <p className="text-white font-serif text-base font-semibold">Clarité Lumière</p>
-        <p className="text-white/50 text-xs mt-0.5">Painel Admin</p>
+    <aside className="w-64 bg-[#2A0D3E] min-h-screen flex flex-col relative overflow-hidden shrink-0 shadow-[4px_0_24px_rgba(0,0,0,0.1)]">
+      <div className="absolute inset-0 bg-gradient-brand opacity-20 z-0 mix-blend-screen pointer-events-none"></div>
+      
+      <div className="p-8 border-b border-white/5 relative z-10 flex flex-col items-center">
+        <Link href="/" className="group mb-2 block">
+           <p className="text-gradient-gold font-serif text-xl font-bold tracking-[0.2em] transform group-hover:scale-105 transition-transform duration-300">
+            CLARITÉ
+          </p>
+        </Link>
+        <div className="h-px w-10 bg-[#D4A017]/50 mb-2"></div>
+        <p className="text-gray-400 text-[10px] uppercase tracking-widest">Painel Admin</p>
       </div>
-      <nav className="flex-1 p-3 space-y-1">
+      
+      <nav className="flex-1 px-4 py-8 space-y-2 relative z-10">
         {[
-          { href: "/admin/dashboard", label: "Dashboard" },
-          { href: "/admin/produtos", label: "Produtos" },
-          { href: "/admin/categorias", label: "Categorias" },
+          { href: "/admin/dashboard", label: "Dashboard", icon: "M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" },
+          { href: "/admin/produtos", label: "Produtos", icon: "M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" },
+          { href: "/admin/categorias", label: "Categorias", icon: "M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" },
         ].map((item) => (
           <Link
             key={item.href}
             href={item.href}
-            className="flex items-center gap-2 px-3 py-2 rounded text-white/80 hover:bg-white/10 hover:text-white text-sm transition-colors"
+            className="flex items-center gap-3 px-4 py-3 rounded-lg text-gray-300 hover:bg-white/5 hover:text-[#D4A017] text-sm transition-all duration-300 group"
           >
-            {item.label}
+            <svg className="w-5 h-5 opacity-70 group-hover:opacity-100 transition-opacity" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d={item.icon} />
+            </svg>
+            <span className="font-medium tracking-wide">{item.label}</span>
           </Link>
         ))}
       </nav>
-      <div className="p-3 border-t border-white/10">
+      
+      <div className="p-4 border-t border-white/5 relative z-10">
         <form action="/admin/logout" method="POST">
           <button
             type="submit"
-            className="w-full text-left px-3 py-2 text-white/60 hover:text-white text-sm transition-colors"
+            className="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-lg text-gray-400 hover:bg-white/5 hover:text-red-400 text-sm transition-all duration-300"
           >
-            Sair
+            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+            </svg>
+            <span className="font-medium tracking-wide">Deslogar Seguramente</span>
           </button>
         </form>
       </div>
@@ -44,9 +59,13 @@ export default async function AdminLayout({ children }: { children: React.ReactN
   if (!user) redirect("/admin/login");
 
   return (
-    <div className="flex min-h-screen bg-gray-50">
+    <div className="flex min-h-screen bg-[#F5F5F5] font-sans">
       <AdminSidebar />
-      <main className="flex-1 p-8 overflow-auto">{children}</main>
+      <main className="flex-1 overflow-auto">
+        <div className="max-w-7xl mx-auto p-8 lg:p-12">
+          {children}
+        </div>
+      </main>
     </div>
   );
 }

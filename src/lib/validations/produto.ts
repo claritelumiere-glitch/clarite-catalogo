@@ -12,6 +12,12 @@ export const produtoSchema = z.object({
     .optional(),
   ativo: z.boolean().default(true),
   destaque: z.boolean().default(false),
+  estoque: z.coerce
+    .number({ error: "Estoque deve ser um número" })
+    .int("Estoque deve ser um número inteiro")
+    .min(0, "Estoque não pode ser negativo")
+    .default(0),
+  caracteristicas: z.record(z.string(), z.string()).default({}),
 });
 
 export type ProdutoFormData = z.infer<typeof produtoSchema>;

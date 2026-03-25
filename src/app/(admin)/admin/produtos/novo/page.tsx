@@ -6,6 +6,7 @@ import { createClient } from "@/lib/supabase/client";
 import { slugify } from "@/lib/utils";
 import { produtoSchema, validateImageFile } from "@/lib/validations/produto";
 import type { Categoria } from "@/types/database";
+import { EditorCaracteristicas } from "@/components/admin/EditorCaracteristicas";
 
 export default function NovoProdutoPage() {
   const router = useRouter();
@@ -14,6 +15,7 @@ export default function NovoProdutoPage() {
   const [error, setError] = useState<string | null>(null);
   const [uploadingImages, setUploadingImages] = useState(false);
   const [imagensUrls, setImagensUrls] = useState<string[]>([]);
+  const [caracteristicas, setCaracteristicas] = useState<Record<string, string>>({});
 
   useEffect(() => {
     const supabase = createClient();
@@ -74,6 +76,8 @@ export default function NovoProdutoPage() {
       preco: formData.get("preco") || null,
       ativo: formData.get("ativo") === "on",
       destaque: formData.get("destaque") === "on",
+      estoque: formData.get("estoque") || 0,
+      caracteristicas,
     });
 
     if (!result.success) {
@@ -157,10 +161,22 @@ export default function NovoProdutoPage() {
             placeholder="Descrição do produto..." />
         </div>
 
+        {/* Estoque */}
+        <div>
+          <label className="block text-xs font-medium text-gray-600 mb-1">Estoque (unidades)</label>
+          <input name="estoque" type="number" step="1" min="0" defaultValue={0}
+            className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-[#6B2D8B] transition-colors"
+            placeholder="0" />
+          <p className="text-xs text-gray-400 mt-1">Deixe 0 para marcar como esgotado/indisponivel</p>
+        </div>
+
+        {/* Caracteristicas */}
+        <EditorCaracteristicas valor={caracteristicas} onChange={setCaracteristicas} />
+
         {/* Images */}
         <div>
           <label className="block text-xs font-medium text-gray-600 mb-1">
-            Imagens (JPG, PNG ou WebP — máx. 5MB cada)
+            Imagens (JPG, PNG ou WebP — max. 5MB cada)
           </label>
           <input
             type="file"

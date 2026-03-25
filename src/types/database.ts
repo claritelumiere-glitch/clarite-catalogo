@@ -49,6 +49,8 @@ export interface Database {
           imagens: string[];
           ativo: boolean;
           destaque: boolean;
+          estoque: number;
+          caracteristicas: Record<string, string>;
           created_at: string;
           updated_at: string;
         };
@@ -63,6 +65,8 @@ export interface Database {
           imagens?: string[];
           ativo?: boolean;
           destaque?: boolean;
+          estoque?: number;
+          caracteristicas?: Record<string, string>;
           created_at?: string;
           updated_at?: string;
         };
@@ -77,6 +81,8 @@ export interface Database {
           imagens?: string[];
           ativo?: boolean;
           destaque?: boolean;
+          estoque?: number;
+          caracteristicas?: Record<string, string>;
           created_at?: string;
           updated_at?: string;
         };

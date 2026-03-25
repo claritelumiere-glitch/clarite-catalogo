@@ -45,28 +45,31 @@ export default function LoginPage() {
   }
 
   return (
-    <div
-      className="min-h-screen flex items-center justify-center p-4"
-      style={{
-        background: "linear-gradient(135deg, #4A1A6B 0%, #6B2D8B 35%, #9B2C8A 65%, #C2185B 100%)",
-      }}
-    >
-      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-sm p-10">
+    <div className="min-h-screen flex items-center justify-center p-4 relative overflow-hidden">
+      {/* Background Gradient */}
+      <div className="absolute inset-0 bg-gradient-brand z-0 opacity-95"></div>
+      <div className="absolute inset-0 bg-black/40 z-0"></div>
+      
+      {/* Subtle gold particles effect */}
+      <div className="absolute inset-0 z-0 opacity-20 bg-[url('https://www.transparenttextures.com/patterns/stardust.png')] pointer-events-none mix-blend-screen"></div>
+
+      <div className="relative z-10 glassmorphism bg-white/10 backdrop-blur-xl border border-white/20 rounded-2xl shadow-2xl w-full max-w-sm p-10">
         {/* Logo */}
         <div className="flex flex-col items-center mb-8">
-          <Image src="/logo.png" alt="Clarité Lumière" width={60} height={80} className="object-contain mb-3" />
-          <p
-            className="font-serif font-bold text-2xl text-center"
-            style={{ color: "#6B2D8B", fontFamily: "'Playfair Display', Georgia, serif" }}
-          >
-            Clarité Lumière
+          <div className="w-16 h-20 relative mb-4">
+            <Image src="/logo.png" alt="Clarité Lumière" fill className="object-contain" priority />
+          </div>
+          <p className="font-serif font-bold text-2xl text-center text-gradient-gold tracking-widest drop-shadow-md">
+            CLARITÉ LUMIÈRE
           </p>
-          <p className="text-gray-400 text-sm text-center mt-1">Painel Administrativo</p>
+          <p className="text-gray-300 text-xs tracking-[0.2em] uppercase text-center mt-2 font-light">
+            Painel Administrativo
+          </p>
         </div>
 
-        <form onSubmit={handleSubmit} className="space-y-4" noValidate>
+        <form onSubmit={handleSubmit} className="space-y-5" noValidate>
           <div>
-            <label htmlFor="email" className="block text-xs font-medium text-gray-600 mb-1">
+            <label htmlFor="email" className="block text-xs font-medium text-gray-300 uppercase tracking-widest mb-1.5 ml-1">
               Email
             </label>
             <input
@@ -75,13 +78,13 @@ export default function LoginPage() {
               type="email"
               autoComplete="email"
               required
-              className="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:border-[#6B2D8B] focus:ring-1 focus:ring-[#6B2D8B] transition-colors"
+              className="w-full bg-black/20 border border-white/10 rounded-lg px-4 py-3 text-sm text-white focus:outline-none focus:border-[#D4A017] focus:ring-1 focus:ring-[#D4A017] transition-all placeholder-gray-500"
               placeholder="seu@email.com"
             />
           </div>
 
           <div>
-            <label htmlFor="password" className="block text-xs font-medium text-gray-600 mb-1">
+            <label htmlFor="password" className="block text-xs font-medium text-gray-300 uppercase tracking-widest mb-1.5 ml-1">
               Senha
             </label>
             <input
@@ -90,26 +93,24 @@ export default function LoginPage() {
               type="password"
               autoComplete="current-password"
               required
-              className="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:border-[#6B2D8B] focus:ring-1 focus:ring-[#6B2D8B] transition-colors"
+              className="w-full bg-black/20 border border-white/10 rounded-lg px-4 py-3 text-sm text-white focus:outline-none focus:border-[#D4A017] focus:ring-1 focus:ring-[#D4A017] transition-all placeholder-gray-500"
               placeholder="••••••••"
             />
           </div>
 
           {error && (
-            <div className="bg-red-50 border border-red-200 rounded-lg px-3 py-2">
-              <p className="text-red-600 text-xs">{error}</p>
+            <div className="bg-red-500/10 border border-red-500/30 rounded-lg px-4 py-3">
+              <p className="text-red-200 text-xs text-center">{error}</p>
             </div>
           )}
 
           <button
             type="submit"
             disabled={loading}
-            className="w-full disabled:opacity-60 text-white font-medium py-2.5 px-4 rounded-lg transition-colors text-sm mt-2"
-            style={{ backgroundColor: "#6B2D8B" }}
-            onMouseEnter={(e) => { (e.currentTarget.style.backgroundColor = "#9B2C8A"); }}
-            onMouseLeave={(e) => { (e.currentTarget.style.backgroundColor = "#6B2D8B"); }}
+            className="group relative overflow-hidden w-full text-center font-bold uppercase tracking-[0.15em] py-3.5 px-6 rounded-lg bg-gradient-brand text-white shadow-lg hover:shadow-purple-dark/50 transition-all duration-300 transform hover:-translate-y-1 mt-6 border border-white/10"
           >
-            {loading ? "Entrando..." : "Entrar"}
+            <span className="relative z-10">{loading ? "Entrando..." : "Acessar Painel"}</span>
+            <div className="absolute inset-0 h-full w-full bg-white/20 -translate-x-full group-hover:animate-[shimmer_1.5s_infinite] z-0" />
           </button>
         </form>
       </div>

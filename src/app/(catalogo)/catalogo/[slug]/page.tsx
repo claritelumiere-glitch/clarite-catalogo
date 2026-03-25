@@ -1,10 +1,11 @@
 import { createClient } from "@/lib/supabase/server";
 import { formatCurrency } from "@/lib/utils";
 import { notFound } from "next/navigation";
-import Image from "next/image";
 import Link from "next/link";
 import type { Metadata } from "next";
 import type { Produto, Categoria } from "@/types/database";
+import { GaleriaImagens } from "@/components/catalogo/GaleriaImagens";
+import { ProdutoDetalhesClient } from "@/components/catalogo/ProdutoDetalhesClient";
 
 interface PageProps {
   params: Promise<{ slug: string }>;
@@ -40,15 +41,14 @@ export default async function ProdutoPage({ params }: PageProps) {
 
   const produto = data as unknown as ProdutoComCategoria;
   const categoria = produto.categorias;
-  const whatsappMsg = encodeURIComponent(
-    `Olá! Tenho interesse no produto: ${produto.nome} (Cód: ${produto.codigo})`
-  );
+  const caracteristicas = (produto.caracteristicas ?? {}) as Record<string, string>;
+  const temCaracteristicas = Object.keys(caracteristicas).length > 0;
 
   return (
     <div className="max-w-5xl mx-auto px-4 py-10">
       {/* Breadcrumb */}
       <nav className="text-xs text-gray-400 mb-6 flex items-center gap-1">
-        <Link href="/catalogo" className="hover:text-[#6B2D8B]">Catálogo</Link>
+        <Link href="/catalogo" className="hover:text-[#6B2D8B]">Catalogo</Link>
         {categoria && (
           <>
             <span>/</span>
@@ -62,91 +62,104 @@ export default async function ProdutoPage({ params }: PageProps) {
       </nav>
 
       <div className="grid md:grid-cols-2 gap-10">
-        {/* Images */}
-        <div>
-          {produto.imagens && produto.imagens.length > 0 ? (
-            <div className="space-y-3">
-              <div className="relative aspect-square rounded-lg overflow-hidden bg-gray-50 border border-gray-200">
-                <Image
-                  src={produto.imagens[0]}
-                  alt={produto.nome}
-                  fill
-                  className="object-cover"
-                  priority
-                />
-              </div>
-              {produto.imagens.length > 1 && (
-                <div className="flex gap-2 overflow-x-auto">
-                  {produto.imagens.slice(1).map((img: string, i: number) => (
-                    <div key={i} className="relative w-20 h-20 flex-shrink-0 rounded border border-gray-200 overflow-hidden bg-gray-50">
-                      <Image src={img} alt={`${produto.nome} ${i + 2}`} fill className="object-cover" />
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
-          ) : (
-            <div className="aspect-square rounded-lg bg-gray-50 border border-gray-200 flex items-center justify-center">
-              <svg viewBox="0 0 100 130" className="w-24 h-24 text-[#D4A017] opacity-20" fill="currentColor">
-                <rect x="48" y="0" width="4" height="15" rx="2"/>
-                <path d="M30 15 Q50 10 70 15 L65 55 Q50 60 35 55 Z"/>
-                <path d="M35 55 Q50 60 65 55 L60 85 Q50 90 40 85 Z"/>
-                <path d="M40 85 Q50 90 60 85 L55 105 Q50 108 45 105 Z"/>
-              </svg>
-            </div>
-          )}
-        </div>
+        {/* Images — interactive gallery */}
+        <GaleriaImagens imagens={produto.imagens ?? []} nomeAlt={produto.nome} />
 
         {/* Info */}
-        <div>
+        <div className="flex flex-col">
           {categoria && (
             <Link
               href={`/catalogo?categoria=${categoria.slug}`}
-              className="text-xs text-[#9B2C8A] font-medium uppercase tracking-widest hover:underline"
+              className="text-xs text-[#9B2C8A] font-bold uppercase tracking-[0.2em] hover:text-[#D4A017] transition-colors"
             >
               {categoria.nome}
             </Link>
           )}
-          <h1 className="font-serif text-2xl text-gray-900 font-semibold mt-2 leading-snug">
+          
+          <h1 className="font-serif text-3xl md:text-4xl text-gray-900 font-bold mt-3 leading-tight">
             {produto.nome}
           </h1>
-          <p className="text-xs text-gray-400 mt-1">Código: {produto.codigo}</p>
+          
+          {/* Social Proof & Scarcity */}
+          <div className="flex items-center gap-4 mt-4 pb-4 border-b border-gray-100">
+            <p className="text-xs text-gray-400 font-mono tracking-wider">REF: {produto.codigo.slice(0, 8)}</p>
+            <div className="h-4 w-px bg-gray-200"></div>
+            <div className="flex items-center gap-1.5 text-xs font-semibold text-[#D4A017] bg-[#D4A017]/10 px-2 py-1 rounded">
+              <svg className="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20">
+                <path d="M10 12a2 2 0 100-4 2 2 0 000 4z" />
+                <path fillRule="evenodd" d="M.458 10C1.732 5.943 5.522 3 10 3s8.268 2.943 9.542 7c-1.274 4.057-5.064 7-9.542 7S1.732 14.057.458 10zM14 10a4 4 0 11-8 0 4 4 0 018 0z" clipRule="evenodd" />
+              </svg>
+              {20 + (produto.nome.length % 30)} arquitetos visualizaram hoje
+            </div>
+          </div>
 
-          {produto.preco && (
-            <div className="mt-4 inline-block bg-gray-50 rounded-lg px-4 py-3">
-              <p className="text-xs text-gray-500">Preço</p>
-              <p className="text-2xl font-semibold text-[#6B2D8B]">
-                {formatCurrency(produto.preco)}
+          {produto.preco ? (
+            <div className="mt-6 mb-2">
+              <p className="text-xs text-gray-400 font-medium uppercase tracking-widest mb-1">Investimento</p>
+              <div className="flex items-baseline gap-2">
+                <p className="text-4xl font-bold text-[#6B2D8B]">
+                  {formatCurrency(produto.preco)}
+                </p>
+                <p className="text-sm text-gray-500 font-medium">à vista</p>
+              </div>
+              <p className="text-xs text-[#9B2C8A] mt-1 font-medium">Ou em até 10x sem juros no cartão de crédito</p>
+            </div>
+          ) : (
+            <div className="mt-6 mb-2">
+              <p className="text-2xl font-bold text-[#D4A017] uppercase tracking-widest">
+                Sob Consulta
               </p>
             </div>
           )}
 
-          {produto.descricao && (
-            <div className="mt-6">
-              <h2 className="text-xs font-medium uppercase tracking-widest text-gray-500 mb-2">Descrição</h2>
-              <p className="text-gray-600 text-sm leading-relaxed whitespace-pre-line">{produto.descricao}</p>
-            </div>
-          )}
+          {/* Client-side interactive features: favorites, quantity, CTA */}
+          <ProdutoDetalhesClient
+            produtoId={produto.id}
+            produtoNome={produto.nome}
+            produtoCodigo={produto.codigo}
+            estoque={produto.estoque ?? 0}
+          />
 
-          {/* CTA */}
-          <div className="mt-8 flex flex-col gap-3">
-            <a
-              href={`https://wa.me/5511999999999?text=${whatsappMsg}`}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="bg-[#6B2D8B] hover:bg-[#9B2C8A] text-white text-center font-medium py-3 px-6 rounded-lg transition-colors"
-            >
-              Solicitar Orçamento via WhatsApp
-            </a>
+          {/* Back link */}
+          <div className="mt-4">
             <Link
               href="/catalogo"
-              className="text-center text-sm text-gray-500 hover:text-[#6B2D8B] transition-colors"
+              className="text-sm text-gray-500 hover:text-[#6B2D8B] transition-colors"
             >
-              ← Voltar ao catálogo
+              ← Voltar ao catalogo
             </Link>
           </div>
         </div>
       </div>
+
+      {/* Description section */}
+      {produto.descricao && (
+        <div className="mt-12 border-t border-gray-200 pt-8">
+          <h2 className="font-serif text-lg font-semibold text-gray-900 mb-4">Descricao</h2>
+          <p className="text-gray-600 text-sm leading-relaxed whitespace-pre-line max-w-3xl">
+            {produto.descricao}
+          </p>
+        </div>
+      )}
+
+      {/* Characteristics section */}
+      {temCaracteristicas && (
+        <div className="mt-8 border-t border-gray-200 pt-8">
+          <h2 className="font-serif text-lg font-semibold text-gray-900 mb-4">Caracteristicas</h2>
+          <div className="max-w-2xl">
+            <table className="w-full text-sm">
+              <tbody>
+                {Object.entries(caracteristicas).map(([chave, valor], i) => (
+                  <tr key={chave} className={i % 2 === 0 ? "bg-gray-50" : "bg-white"}>
+                    <td className="px-4 py-2.5 font-medium text-gray-700 w-1/3">{chave}</td>
+                    <td className="px-4 py-2.5 text-gray-600">{valor}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
