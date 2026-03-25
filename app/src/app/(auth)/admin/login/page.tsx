@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Image from "next/image";
 import { createClient } from "@/lib/supabase/client";
 import { z } from "zod";
 
@@ -53,25 +54,7 @@ export default function LoginPage() {
       <div className="bg-white rounded-2xl shadow-2xl w-full max-w-sm p-10">
         {/* Logo */}
         <div className="flex flex-col items-center mb-8">
-          <svg viewBox="0 0 80 110" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-12 h-[66px] mb-3">
-            <rect x="38" y="0" width="4" height="12" rx="2" fill="#D4A017"/>
-            <path d="M36 12 Q40 8 44 12" stroke="#D4A017" strokeWidth="2" fill="none"/>
-            <path d="M22 14 Q40 10 58 14 L53 42 Q40 46 27 42 Z" fill="#D4A017"/>
-            <path d="M27 42 Q40 46 53 42 L49 64 Q40 68 31 64 Z" fill="#D4A017" opacity="0.9"/>
-            <path d="M31 64 Q40 68 49 64 L46 80 Q40 83 34 80 Z" fill="#D4A017" opacity="0.8"/>
-            <line x1="32" y1="80" x2="30" y2="90" stroke="#D4A017" strokeWidth="1.5" opacity="0.9"/>
-            <line x1="36" y1="82" x2="34" y2="94" stroke="#D4A017" strokeWidth="1.5" opacity="0.9"/>
-            <line x1="40" y1="83" x2="40" y2="96" stroke="#D4A017" strokeWidth="1.5" opacity="0.9"/>
-            <line x1="44" y1="82" x2="46" y2="94" stroke="#D4A017" strokeWidth="1.5" opacity="0.9"/>
-            <line x1="48" y1="80" x2="50" y2="90" stroke="#D4A017" strokeWidth="1.5" opacity="0.9"/>
-            <circle cx="30" cy="92" r="2" fill="#D4A017"/>
-            <circle cx="34" cy="96" r="2" fill="#D4A017"/>
-            <circle cx="40" cy="98" r="2" fill="#D4A017"/>
-            <circle cx="46" cy="96" r="2" fill="#D4A017"/>
-            <circle cx="50" cy="92" r="2" fill="#D4A017"/>
-            <ellipse cx="40" cy="42" rx="13" ry="2" fill="#D4A017" opacity="0.6"/>
-            <ellipse cx="40" cy="64" rx="9" ry="1.5" fill="#D4A017" opacity="0.6"/>
-          </svg>
+          <Image src="/logo.png" alt="Clarité Lumière" width={60} height={80} className="object-contain mb-3" />
           <p
             className="font-serif font-bold text-2xl text-center"
             style={{ color: "#6B2D8B", fontFamily: "'Playfair Display', Georgia, serif" }}
