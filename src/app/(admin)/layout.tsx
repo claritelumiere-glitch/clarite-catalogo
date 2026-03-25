@@ -5,7 +5,7 @@ import { createClient } from "@/lib/supabase/server";
 async function AdminSidebar() {
   return (
     <aside className="w-64 bg-[#2A0D3E] min-h-screen flex flex-col relative overflow-hidden shrink-0 shadow-[4px_0_24px_rgba(0,0,0,0.1)]">
-      <div className="absolute inset-0 bg-gradient-brand opacity-20 z-0 mix-blend-screen pointer-events-none"></div>
+      <div className="absolute inset-0 bg-gradient-to-r from-[#6B2D8B] to-[#C2185B] opacity-20 z-0 mix-blend-screen pointer-events-none"></div>
       
       <div className="p-8 border-b border-white/5 relative z-10 flex flex-col items-center">
         <Link href="/" className="group mb-2 block">

@@ -47,11 +47,11 @@ export default function LoginPage() {
   return (
     <div className="min-h-screen flex items-center justify-center p-4 relative overflow-hidden">
       {/* Background Gradient */}
-      <div className="absolute inset-0 bg-gradient-brand z-0 opacity-95"></div>
+      <div className="absolute inset-0 bg-gradient-to-r from-[#6B2D8B] to-[#C2185B] z-0 opacity-95"></div>
       <div className="absolute inset-0 bg-black/40 z-0"></div>
       
       {/* Subtle gold particles effect */}
-      <div className="absolute inset-0 z-0 opacity-20 bg-[url('https://www.transparenttextures.com/patterns/stardust.png')] pointer-events-none mix-blend-screen"></div>
+      <div className="absolute inset-0 z-0 opacity-20 bg-[radial-gradient(1px_1px_at_20px_30px,rgba(212,160,23,0.4)_1px,transparent_0),radial-gradient(1px_1px_at_40px_70px,rgba(232,197,71,0.3)_1px,transparent_0),radial-gradient(1px_1px_at_80px_10px,rgba(255,255,255,0.3)_1px,transparent_0)] bg-[size:100px_100px] pointer-events-none mix-blend-screen"></div>
 
       <div className="relative z-10 glassmorphism bg-white/10 backdrop-blur-xl border border-white/20 rounded-2xl shadow-2xl w-full max-w-sm p-10">
         {/* Logo */}
@@ -107,7 +107,7 @@ export default function LoginPage() {
           <button
             type="submit"
             disabled={loading}
-            className="group relative overflow-hidden w-full text-center font-bold uppercase tracking-[0.15em] py-3.5 px-6 rounded-lg bg-gradient-brand text-white shadow-lg hover:shadow-purple-dark/50 transition-all duration-300 transform hover:-translate-y-1 mt-6 border border-white/10"
+            className="group relative overflow-hidden w-full text-center font-bold uppercase tracking-[0.15em] py-3.5 px-6 rounded-lg bg-gradient-to-r from-[#6B2D8B] to-[#C2185B] text-white shadow-lg hover:shadow-purple-dark/50 transition-all duration-300 transform hover:-translate-y-1 mt-6 border border-white/10"
           >
             <span className="relative z-10">{loading ? "Entrando..." : "Acessar Painel"}</span>
             <div className="absolute inset-0 h-full w-full bg-white/20 -translate-x-full group-hover:animate-[shimmer_1.5s_infinite] z-0" />

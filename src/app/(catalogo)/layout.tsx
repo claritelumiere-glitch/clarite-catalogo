@@ -1,7 +1,9 @@
+// Layout wrapper remains the same, we just inject the new component
 import Link from "next/link";
 import Image from "next/image";
 import type { Metadata } from "next";
 import { LinkFavoritos } from "@/components/catalogo/LinkFavoritos";
+import { UserAuthMenu } from "@/components/catalogo/UserAuthMenu";
 
 export const metadata: Metadata = {
   title: { default: "Catálogo", template: "%s | Clarité Lumière" },
@@ -28,15 +30,19 @@ export default function CatalogoLayout({ children }: { children: React.ReactNode
             </div>
           </Link>
 
-          <div className="flex items-center gap-5">
-            <LinkFavoritos />
+          <div className="flex items-center gap-4 sm:gap-6">
+            <div className="flex items-center gap-4 border-r border-[#6B2D8B]/20 pr-4 sm:pr-6">
+              <UserAuthMenu />
+              <LinkFavoritos />
+            </div>
             <a
               href="https://wa.me/5511999999999?text=Olá!%20Gostaria%20de%20falar%20com%20um%20especialista%20sobre%20iluminação."
               target="_blank"
               rel="noopener noreferrer"
-              className="group relative overflow-hidden bg-gradient-brand text-white text-sm font-semibold px-6 py-2.5 rounded-full transition-all duration-300 hover:shadow-lg hover:shadow-purple-dark/30 animate-pulse-gold flex items-center gap-2"
+              className="group relative overflow-hidden bg-gradient-to-r from-[#6B2D8B] to-[#C2185B] text-white text-xs sm:text-sm font-semibold px-4 sm:px-6 py-2.5 rounded-full transition-all duration-300 hover:shadow-lg hover:shadow-[#6B2D8B]/30 animate-pulse-gold flex items-center gap-2"
             >
-              <span className="relative z-10">Falar com Especialista</span>
+              <span className="relative z-10 hidden sm:inline">Falar com Especialista</span>
+              <span className="relative z-10 sm:hidden">WhatsApp</span>
               <div className="absolute inset-0 h-full w-full bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:animate-[shimmer_1.5s_infinite] z-0" />
             </a>
           </div>
@@ -49,7 +55,7 @@ export default function CatalogoLayout({ children }: { children: React.ReactNode
 
       {/* Footer Premium */}
       <footer className="relative overflow-hidden text-center text-white pb-6 pt-12 mt-12">
-        <div className="absolute inset-0 bg-gradient-brand z-0 opacity-95"></div>
+        <div className="absolute inset-0 bg-gradient-to-r from-[#6B2D8B] to-[#C2185B] z-0 opacity-95"></div>
         <div className="absolute inset-0 bg-black/40 z-0"></div>
         
         <div className="relative z-10 max-w-4xl mx-auto px-4">

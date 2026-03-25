@@ -93,8 +93,8 @@ export default async function CatalogoPage({ searchParams }: PageProps) {
   return (
     <div className="max-w-7xl mx-auto px-4 py-8">
       {/* Persuasive Banner */}
-      <div className="mb-10 w-full bg-gradient-brand rounded-2xl p-8 text-white relative overflow-hidden shadow-xl">
-        <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/stardust.png')] opacity-20 pointer-events-none mix-blend-screen"></div>
+      <div className="mb-10 w-full bg-gradient-to-r from-[#6B2D8B] to-[#C2185B] rounded-2xl p-8 text-white relative overflow-hidden shadow-xl">
+        <div className="absolute inset-0 bg-[radial-gradient(1px_1px_at_20px_30px,rgba(212,160,23,0.4)_1px,transparent_0),radial-gradient(1px_1px_at_40px_70px,rgba(232,197,71,0.3)_1px,transparent_0),radial-gradient(1px_1px_at_80px_10px,rgba(255,255,255,0.3)_1px,transparent_0)] bg-[size:100px_100px] opacity-20 pointer-events-none mix-blend-screen"></div>
         <div className="relative z-10 flex flex-col md:flex-row items-center justify-between gap-6">
           <div>
             <h2 className="font-serif text-3xl font-bold mb-2 tracking-wide text-gradient-gold">Coleção Exclusiva</h2>

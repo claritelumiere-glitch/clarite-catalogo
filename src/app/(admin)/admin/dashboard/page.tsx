@@ -40,7 +40,7 @@ export default async function DashboardPage() {
           </Link>
           <Link
             href="/admin/produtos/novo"
-            className="group relative overflow-hidden bg-gradient-brand text-white text-sm font-bold px-6 py-2.5 rounded-lg transition-all shadow-lg hover:shadow-[#6B2D8B]/40 flex items-center gap-2 transform hover:-translate-y-0.5 border border-white/10"
+            className="group relative overflow-hidden bg-gradient-to-r from-[#6B2D8B] to-[#C2185B] text-white text-sm font-bold px-6 py-2.5 rounded-lg transition-all shadow-lg hover:shadow-[#6B2D8B]/40 flex items-center gap-2 transform hover:-translate-y-0.5 border border-white/10"
           >
             <span className="relative z-10 flex items-center gap-2">
               <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">

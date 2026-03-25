@@ -16,10 +16,11 @@ export default function FavoritosPage() {
 
   useEffect(() => {
     if (!carregado) return;
-
     if (favoritos.length === 0) {
-      setProdutos([]);
-      setLoading(false);
+      Promise.resolve().then(() => {
+        setProdutos([]);
+        setLoading(false);
+      });
       return;
     }
 

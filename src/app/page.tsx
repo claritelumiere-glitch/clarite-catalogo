@@ -1,6 +1,6 @@
 import Link from "next/link";
 import Image from "next/image";
-import { LinkFavoritos } from "@/components/catalogo/LinkFavoritos";
+
 
 export default function HomePage() {
   return (
@@ -47,7 +47,7 @@ export default function HomePage() {
           <div className="absolute inset-0 bg-gradient-to-b from-[#4A1A6B] via-[#6B2D8B] to-[#2A0D3E] z-0"></div>
           
           {/* Subtle gold particles effect using absolute divs */}
-          <div className="absolute inset-0 z-0 opacity-20 bg-[url('https://www.transparenttextures.com/patterns/stardust.png')] pointer-events-none mix-blend-screen"></div>
+          <div className="absolute inset-0 z-0 opacity-20 bg-[radial-gradient(1px_1px_at_20px_30px,rgba(212,160,23,0.4)_1px,transparent_0),radial-gradient(1px_1px_at_40px_70px,rgba(232,197,71,0.3)_1px,transparent_0),radial-gradient(1px_1px_at_80px_10px,rgba(255,255,255,0.3)_1px,transparent_0)] bg-[size:100px_100px] pointer-events-none mix-blend-screen"></div>
 
           <div className="relative z-10 text-center px-4 max-w-4xl mx-auto mt-20">
             <h1 className="font-serif text-5xl md:text-7xl font-bold text-white leading-tight mb-6 drop-shadow-lg opacity-0 animate-[fade-in-up_1s_ease-out_forwards]">
@@ -148,7 +148,7 @@ export default function HomePage() {
 
       {/* Footer Premium */}
       <footer className="relative overflow-hidden text-center text-white pb-6 pt-12">
-        <div className="absolute inset-0 bg-gradient-brand z-0 opacity-95"></div>
+        <div className="absolute inset-0 bg-gradient-to-r from-[#6B2D8B] to-[#C2185B] z-0 opacity-95"></div>
         <div className="absolute inset-0 bg-black/40 z-0"></div>
         
         <div className="relative z-10 max-w-4xl mx-auto px-4">
