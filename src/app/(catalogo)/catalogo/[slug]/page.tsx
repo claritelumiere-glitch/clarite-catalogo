@@ -102,7 +102,6 @@ export default async function ProdutoPage({ params }: PageProps) {
                 </p>
                 <p className="text-sm text-gray-500 font-medium">à vista</p>
               </div>
-              <p className="text-xs text-[#9B2C8A] mt-1 font-medium">Ou em até 10x sem juros no cartão de crédito</p>
             </div>
           ) : (
             <div className="mt-6 mb-2">
