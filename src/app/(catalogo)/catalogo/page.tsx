@@ -9,41 +9,8 @@ export const metadata: Metadata = {
   title: "Catálogo de Produtos",
 };
 
-const PER_PAGE = 24;
-
 interface PageProps {
-  searchParams: Promise<{ busca?: string; categoria?: string; pagina?: string }>;
-}
-
-function buildPaginationItems(pagina: number, totalPaginas: number): (number | "...")[] {
-  if (totalPaginas <= 7) {
-    return Array.from({ length: totalPaginas }, (_, i) => i + 1);
-  }
-
-  const items: (number | "...")[] = [];
-  const delta = 2;
-  const left = pagina - delta;
-  const right = pagina + delta;
-
-  // Always show first page
-  items.push(1);
-
-  if (left > 2) {
-    items.push("...");
-  }
-
-  for (let i = Math.max(2, left); i <= Math.min(totalPaginas - 1, right); i++) {
-    items.push(i);
-  }
-
-  if (right < totalPaginas - 1) {
-    items.push("...");
-  }
-
-  // Always show last page
-  items.push(totalPaginas);
-
-  return items;
+  searchParams: Promise<{ busca?: string; categoria?: string }>;
 }
 
 export default async function CatalogoPage({ searchParams }: PageProps) {
@@ -52,8 +19,6 @@ export default async function CatalogoPage({ searchParams }: PageProps) {
   const buscaSanitizada = (buscaRaw === "undefined" ? "" : buscaRaw)
     .slice(0, 100)
     .replace(/[%_\\]/g, "\\$&");
-  const pagina = Math.max(1, Number(params.pagina ?? 1));
-  const offset = (pagina - 1) * PER_PAGE;
 
   const supabase = await createClient();
 
@@ -71,8 +36,7 @@ export default async function CatalogoPage({ searchParams }: PageProps) {
     .select("*, categorias(*)", { count: "exact" })
     .eq("ativo", true)
     .order("destaque", { ascending: false })
-    .order("nome")
-    .range(offset, offset + PER_PAGE - 1);
+    .order("nome");
 
   if (params.categoria) {
     const cat = categorias.find((c) => c.slug === params.categoria);
@@ -87,8 +51,6 @@ export default async function CatalogoPage({ searchParams }: PageProps) {
 
   const { data: produtosRaw, count } = await query;
   const produtos = (produtosRaw ?? []) as unknown as (Produto & { categorias: Categoria | null })[];
-  const totalPaginas = Math.ceil((count ?? 0) / PER_PAGE);
-  const paginationItems = buildPaginationItems(pagina, totalPaginas);
 
   return (
     <div className="max-w-7xl mx-auto px-4 py-8">
@@ -153,34 +115,6 @@ export default async function CatalogoPage({ searchParams }: PageProps) {
                   />
                 ))}
               </div>
-
-              {/* Pagination with ellipsis */}
-              {totalPaginas > 1 && (
-                <div className="mt-10 flex justify-center gap-1 flex-wrap">
-                  {paginationItems.map((item, idx) =>
-                    item === "..." ? (
-                      <span
-                        key={`ellipsis-${idx}`}
-                        className="w-9 h-9 flex items-center justify-center text-gray-400 text-sm select-none"
-                      >
-                        ...
-                      </span>
-                    ) : (
-                      <a
-                        key={item}
-                        href={`/catalogo?${(() => { const p = new URLSearchParams(); if (buscaSanitizada) p.set("busca", buscaSanitizada); if (params.categoria) p.set("categoria", params.categoria); p.set("pagina", String(item)); return p; })()}`}
-                        className={`w-9 h-9 flex items-center justify-center rounded text-sm border transition-colors ${
-                          item === pagina
-                            ? "bg-[#6B2D8B] text-white border-[#6B2D8B]"
-                            : "border-gray-200 text-gray-600 hover:border-[#6B2D8B]"
-                        }`}
-                      >
-                        {item}
-                      </a>
-                    )
-                  )}
-                </div>
-              )}
             </>
           ) : (
             <div className="text-center py-20 text-gray-400">
