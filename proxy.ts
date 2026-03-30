@@ -55,6 +55,12 @@ export async function proxy(request: NextRequest) {
       loginUrl.searchParams.set("redirect", request.nextUrl.pathname);
       return NextResponse.redirect(loginUrl);
     }
+
+    // Check admin role — only users with app_metadata.role === "admin" can access
+    const isAdmin = user.app_metadata?.role === "admin";
+    if (!isAdmin) {
+      return NextResponse.redirect(new URL("/catalogo", request.url));
+    }
   }
 
   return response;
