@@ -102,20 +102,58 @@ export default async function CatalogoPage({ searchParams }: PageProps) {
           </Suspense>
         </div>
 
-        {/* Product grid */}
+        {/* Products grouped by category */}
         <div className="flex-1 min-w-0">
           {produtos && produtos.length > 0 ? (
-            <>
-              <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-4">
-                {produtos.map((produto) => (
-                  <ProdutoCard
-                    key={produto.id}
-                    produto={produto}
-                    categoria={produto.categorias}
-                  />
-                ))}
-              </div>
-            </>
+            <div className="space-y-12">
+              {(() => {
+                // Group products by category, following category order
+                const porCategoria = new Map<string, { categoria: Categoria | null; produtos: typeof produtos }>();
+
+                // Initialize groups in category order
+                for (const cat of categorias) {
+                  porCategoria.set(cat.id, { categoria: cat, produtos: [] });
+                }
+                // Group for products without category
+                porCategoria.set("sem-categoria", { categoria: null, produtos: [] });
+
+                for (const p of produtos) {
+                  const key = p.categoria_id ?? "sem-categoria";
+                  const group = porCategoria.get(key);
+                  if (group) {
+                    group.produtos.push(p);
+                  } else {
+                    // Category exists but wasn't in active list
+                    porCategoria.set(key, { categoria: p.categorias, produtos: [p] });
+                  }
+                }
+
+                return Array.from(porCategoria.values())
+                  .filter((g) => g.produtos.length > 0)
+                  .map((group) => (
+                    <section key={group.categoria?.id ?? "sem-categoria"}>
+                      <div className="flex items-center gap-3 mb-5">
+                        <h2 className="font-serif text-xl font-bold text-gray-800 tracking-tight">
+                          {group.categoria?.nome ?? "Outros"}
+                        </h2>
+                        <div className="flex-1 h-px bg-gradient-to-r from-[#6B2D8B]/20 to-transparent"></div>
+                        <span className="text-xs text-gray-400 font-medium">
+                          {group.produtos.length} {group.produtos.length === 1 ? "item" : "itens"}
+                        </span>
+                      </div>
+                      <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-4">
+                        {group.produtos.map((produto) => (
+                          <ProdutoCard
+                            key={produto.id}
+                            produto={produto}
+                            categoria={produto.categorias}
+                          />
+                        ))}
+                      </div>
+                    </section>
+                  ));
+              })()}
+            </div>
           ) : (
             <div className="text-center py-20 text-gray-400">
               <p className="font-serif text-lg">Nenhum produto encontrado</p>
