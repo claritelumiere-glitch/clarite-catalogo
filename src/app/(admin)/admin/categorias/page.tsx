@@ -20,6 +20,11 @@ export default function CategoriasPage() {
   const [renameSaving, setRenameSaving] = useState(false);
   const renameInputRef = useRef<HTMLInputElement>(null);
 
+  // Drag state
+  const [dragIndex, setDragIndex] = useState<number | null>(null);
+  const [overIndex, setOverIndex] = useState<number | null>(null);
+  const [savingOrder, setSavingOrder] = useState(false);
+
   const supabase = createClient();
 
   async function load() {
@@ -46,9 +51,12 @@ export default function CategoriasPage() {
     setSaving(true);
     setError(null);
 
+    const maxOrdem = categorias.length > 0 ? Math.max(...categorias.map((c) => c.ordem ?? 0)) : 0;
+
     const { error } = await (supabase.from("categorias") as any).insert({
       nome: novaCategoria.trim(),
       slug: slugify(novaCategoria.trim()),
+      ordem: maxOrdem + 1,
     });
 
     if (error) {
@@ -121,9 +129,60 @@ export default function CategoriasPage() {
     }
   }
 
+  // ── Drag & Drop ──────────────────────────────────────────
+  function handleDragStart(index: number) {
+    setDragIndex(index);
+  }
+
+  function handleDragOver(e: React.DragEvent, index: number) {
+    e.preventDefault();
+    setOverIndex(index);
+  }
+
+  function handleDragLeave() {
+    setOverIndex(null);
+  }
+
+  async function handleDrop(e: React.DragEvent, dropIndex: number) {
+    e.preventDefault();
+    setOverIndex(null);
+
+    if (dragIndex === null || dragIndex === dropIndex) {
+      setDragIndex(null);
+      return;
+    }
+
+    // Reorder locally
+    const reordered = [...categorias];
+    const [moved] = reordered.splice(dragIndex, 1);
+    reordered.splice(dropIndex, 0, moved);
+    setCategorias(reordered);
+    setDragIndex(null);
+
+    // Save new order to database
+    setSavingOrder(true);
+    const updates = reordered.map((cat, i) =>
+      (supabase.from("categorias") as any).update({ ordem: i }).eq("id", cat.id)
+    );
+    await Promise.all(updates);
+    setSavingOrder(false);
+  }
+
+  function handleDragEnd() {
+    setDragIndex(null);
+    setOverIndex(null);
+  }
+
   return (
     <div className="max-w-2xl">
-      <h1 className="font-serif text-2xl text-gray-900 font-semibold mb-6">Categorias</h1>
+      <div className="flex items-center justify-between mb-6">
+        <h1 className="font-serif text-2xl text-gray-900 font-semibold">Categorias</h1>
+        {savingOrder && (
+          <span className="text-xs text-[#6B2D8B] font-medium animate-pulse">
+            Salvando ordem...
+          </span>
+        )}
+      </div>
 
       {/* Create */}
       <form onSubmit={handleCreate} className="flex gap-3 mb-6">
@@ -145,6 +204,13 @@ export default function CategoriasPage() {
 
       {error && <p className="text-red-500 text-xs mb-4">{error}</p>}
 
+      <p className="text-xs text-gray-400 mb-3 flex items-center gap-1.5">
+        <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16V4m0 0L3 8m4-4l4 4m6 0v12m0 0l4-4m-4 4l-4-4" />
+        </svg>
+        Arraste para reordenar as categorias no catálogo
+      </p>
+
       {loading ? (
         <div className="text-gray-400 text-sm">Carregando...</div>
       ) : (
@@ -152,8 +218,27 @@ export default function CategoriasPage() {
           {categorias.map((cat, i) => (
             <div
               key={cat.id}
-              className={`flex items-center justify-between px-4 py-3 ${i > 0 ? "border-t border-gray-100" : ""}`}
+              draggable={renamingId !== cat.id}
+              onDragStart={() => handleDragStart(i)}
+              onDragOver={(e) => handleDragOver(e, i)}
+              onDragLeave={handleDragLeave}
+              onDrop={(e) => handleDrop(e, i)}
+              onDragEnd={handleDragEnd}
+              className={`flex items-center gap-3 px-4 py-3 transition-all ${
+                i > 0 ? "border-t border-gray-100" : ""
+              } ${dragIndex === i ? "opacity-40" : ""} ${
+                overIndex === i && dragIndex !== i
+                  ? "border-t-2 !border-t-[#6B2D8B] bg-purple-50/50"
+                  : ""
+              }`}
             >
+              {/* Drag handle */}
+              <div className="cursor-grab active:cursor-grabbing text-gray-300 hover:text-gray-500 transition-colors shrink-0">
+                <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                  <path d="M7 2a2 2 0 10.001 4.001A2 2 0 007 2zm0 6a2 2 0 10.001 4.001A2 2 0 007 8zm0 6a2 2 0 10.001 4.001A2 2 0 007 14zm6-8a2 2 0 10-.001-4.001A2 2 0 0013 6zm0 2a2 2 0 10.001 4.001A2 2 0 0013 8zm0 6a2 2 0 10.001 4.001A2 2 0 0013 14z" />
+                </svg>
+              </div>
+
               <div className="flex-1 min-w-0 mr-3">
                 {renamingId === cat.id ? (
                   <div>
@@ -204,7 +289,7 @@ export default function CategoriasPage() {
                     className="text-xs text-gray-400 hover:text-[#6B2D8B] transition-colors px-2 py-1 rounded border border-gray-200 hover:border-[#6B2D8B]"
                     title="Renomear"
                   >
-                    ✏️ Renomear
+                    Renomear
                   </button>
                 )}
                 <button
