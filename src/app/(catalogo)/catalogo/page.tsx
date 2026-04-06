@@ -49,12 +49,10 @@ export default async function CatalogoPage({ searchParams }: PageProps) {
     );
   }
 
-  const [{ data: produtosRaw, count }, { data: { session } }] = await Promise.all([
-    query,
-    supabase.auth.getSession(),
-  ]);
+  const { data: produtosRaw, count } = await query;
+  const { data: sessionData } = await supabase.auth.getSession();
   const produtos = (produtosRaw ?? []) as unknown as (Produto & { categorias: Categoria | null })[];
-  const mostrarPreco = !!session;
+  const mostrarPreco = !!sessionData?.session;
 
   return (
     <div className="max-w-7xl mx-auto px-4 py-8">
