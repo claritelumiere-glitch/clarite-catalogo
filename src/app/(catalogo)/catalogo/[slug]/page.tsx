@@ -149,7 +149,7 @@ export default async function ProdutoPage({ params }: PageProps) {
                 </Link>
               </div>
             </div>
-          )}
+          ) : null}
 
           {/* Client-side interactive features: favorites, quantity, CTA */}
           {mostrarPreco && (
