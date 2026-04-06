@@ -41,6 +41,8 @@ export default async function ProdutoPage({ params }: PageProps) {
 
   const produto = data as unknown as ProdutoComCategoria;
   const categoria = produto.categorias;
+  const { data: { session } } = await supabase.auth.getSession();
+  const mostrarPreco = !!session;
   const caracteristicas = (produto.caracteristicas ?? {}) as Record<string, string>;
   const temCaracteristicas = Object.keys(caracteristicas).length > 0;
 
@@ -93,31 +95,59 @@ export default async function ProdutoPage({ params }: PageProps) {
             </div>
           </div>
 
-          {produto.preco ? (
-            <div className="mt-6 mb-2">
-              <p className="text-xs text-gray-400 font-medium uppercase tracking-widest mb-1">Investimento</p>
-              <div className="flex items-baseline gap-2">
-                <p className="text-4xl font-bold text-[#6B2D8B]">
-                  {formatCurrency(produto.preco)}
-                </p>
-                <p className="text-sm text-gray-500 font-medium">à vista</p>
+          {mostrarPreco ? (
+            produto.preco ? (
+              <div className="mt-6 mb-2">
+                <p className="text-xs text-gray-400 font-medium uppercase tracking-widest mb-1">Investimento</p>
+                <div className="flex items-baseline gap-2">
+                  <p className="text-4xl font-bold text-[#6B2D8B]">
+                    {formatCurrency(produto.preco)}
+                  </p>
+                  <p className="text-sm text-gray-500 font-medium">à vista</p>
+                </div>
               </div>
-            </div>
+            ) : (
+              <div className="mt-6 mb-2">
+                <p className="text-2xl font-bold text-[#D4A017] uppercase tracking-widest">
+                  Sob Consulta
+                </p>
+              </div>
+            )
           ) : (
-            <div className="mt-6 mb-2">
-              <p className="text-2xl font-bold text-[#D4A017] uppercase tracking-widest">
-                Sob Consulta
-              </p>
+            <div className="mt-6 mb-4 p-5 border border-dashed border-[#6B2D8B]/30 rounded-xl bg-purple-50/50 text-center">
+              <div className="flex justify-center mb-2">
+                <svg className="w-7 h-7 text-[#9B2C8A]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                </svg>
+              </div>
+              <p className="text-sm font-semibold text-gray-700 mb-1">Preço exclusivo para clientes cadastrados</p>
+              <p className="text-xs text-gray-500 mb-4">Crie sua conta gratuitamente para ver os preços e solicitar orçamento.</p>
+              <div className="flex gap-2 justify-center">
+                <Link
+                  href="/login"
+                  className="bg-gradient-to-r from-[#6B2D8B] to-[#C2185B] text-white text-xs font-bold uppercase tracking-widest px-5 py-2.5 rounded-lg hover:shadow-lg hover:shadow-[#6B2D8B]/30 transition-all"
+                >
+                  Criar conta grátis
+                </Link>
+                <Link
+                  href="/login"
+                  className="border border-[#6B2D8B]/40 text-[#6B2D8B] text-xs font-semibold px-4 py-2.5 rounded-lg hover:border-[#6B2D8B] transition-colors"
+                >
+                  Já tenho conta
+                </Link>
+              </div>
             </div>
           )}
 
           {/* Client-side interactive features: favorites, quantity, CTA */}
-          <ProdutoDetalhesClient
-            produtoId={produto.id}
-            produtoNome={produto.nome}
-            produtoCodigo={produto.codigo}
-            estoque={produto.estoque ?? 0}
-          />
+          {mostrarPreco && (
+            <ProdutoDetalhesClient
+              produtoId={produto.id}
+              produtoNome={produto.nome}
+              produtoCodigo={produto.codigo}
+              estoque={produto.estoque ?? 0}
+            />
+          )}
 
           {/* Back link */}
           <div className="mt-4">

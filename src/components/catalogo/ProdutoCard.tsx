@@ -7,9 +7,10 @@ import { BotaoFavorito } from "./BotaoFavorito";
 interface ProdutoCardProps {
   produto: Produto;
   categoria?: Categoria | null;
+  mostrarPreco?: boolean;
 }
 
-export function ProdutoCard({ produto, categoria }: ProdutoCardProps) {
+export function ProdutoCard({ produto, categoria, mostrarPreco = true }: ProdutoCardProps) {
   const primeiraImagem = produto.imagens?.[0];
   const semEstoque = (produto.estoque ?? 0) <= 0;
   
@@ -97,14 +98,32 @@ export function ProdutoCard({ produto, categoria }: ProdutoCardProps) {
           <div className="mt-4 flex items-end justify-between border-t border-gray-50 pt-3">
             <div>
               <p className="text-[10px] text-gray-400 font-mono tracking-wider mb-1">REF: {produto.codigo.slice(0, 8)}</p>
-              {produto.preco ? (
-                <p className="text-[#6B2D8B] font-bold text-base md:text-lg">
-                  {formatCurrency(produto.preco)}
-                </p>
+              {mostrarPreco ? (
+                produto.preco ? (
+                  <p className="text-[#6B2D8B] font-bold text-base md:text-lg">
+                    {formatCurrency(produto.preco)}
+                  </p>
+                ) : (
+                  <p className="text-[#D4A017] text-xs font-semibold uppercase tracking-wider">
+                    Sob Consulta
+                  </p>
+                )
               ) : (
-                <p className="text-[#D4A017] text-xs font-semibold uppercase tracking-wider">
-                  Sob Consulta
-                </p>
+                <Link
+                  href="/login"
+                  onClick={(e) => e.stopPropagation()}
+                  className="flex items-center gap-1.5 group/lock"
+                >
+                  <span className="text-[#6B2D8B] font-bold text-base blur-sm select-none pointer-events-none">
+                    R$ 999,00
+                  </span>
+                  <span className="flex items-center gap-1 text-[10px] font-semibold text-[#9B2C8A] bg-purple-50 px-1.5 py-0.5 rounded group-hover/lock:bg-[#6B2D8B] group-hover/lock:text-white transition-colors">
+                    <svg className="w-2.5 h-2.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                    </svg>
+                    Ver preço
+                  </span>
+                </Link>
               )}
             </div>
             
