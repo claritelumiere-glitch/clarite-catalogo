@@ -3,35 +3,107 @@
 import { useState } from "react";
 import { SeletorQuantidade } from "./SeletorQuantidade";
 import { BotaoFavorito } from "./BotaoFavorito";
+import { formatCurrency } from "@/lib/utils";
+import type { ProdutoVariante } from "@/types/database";
 
 interface ProdutoDetalhesClientProps {
   produtoId: string;
   produtoNome: string;
   produtoCodigo: string;
   estoque: number;
+  preco?: number | null;
+  variantes?: ProdutoVariante[];
 }
 
-export function ProdutoDetalhesClient({ produtoId, produtoNome, produtoCodigo, estoque }: ProdutoDetalhesClientProps) {
+export function ProdutoDetalhesClient({
+  produtoId,
+  produtoNome,
+  produtoCodigo,
+  estoque,
+  preco,
+  variantes = [],
+}: ProdutoDetalhesClientProps) {
+  const temVariantes = variantes.length > 0;
+  const [varianteSelecionada, setVarianteSelecionada] = useState<ProdutoVariante | null>(
+    temVariantes ? variantes[0] : null
+  );
   const [quantidade, setQuantidade] = useState(1);
-  const semEstoque = estoque <= 0;
 
+  const estoqueAtivo = temVariantes ? (varianteSelecionada?.estoque ?? 0) : estoque;
+  const precoAtivo = temVariantes ? varianteSelecionada?.preco : preco;
+  const codigoAtivo = temVariantes ? (varianteSelecionada?.codigo ?? produtoCodigo) : produtoCodigo;
+  const semEstoque = estoqueAtivo <= 0;
+
+  const nomeVariante = varianteSelecionada ? ` — ${varianteSelecionada.nome}` : "";
   const whatsappMsg = encodeURIComponent(
-    `Olá! Tenho interesse no produto: ${produtoNome} (Cód: ${produtoCodigo})${
+    `Olá! Tenho interesse no produto: ${produtoNome}${nomeVariante} (Cód: ${codigoAtivo})${
       !semEstoque ? ` — Quantidade: ${quantidade} unidade${quantidade > 1 ? "s" : ""}` : ""
     }`
   );
 
   return (
     <div>
-      {/* Favorite button */}
+      {/* Seletor de variantes */}
+      {temVariantes && (
+        <div className="mb-5">
+          <p className="text-xs font-semibold text-gray-500 uppercase tracking-widest mb-2">
+            Modelo
+          </p>
+          <div className="flex flex-wrap gap-2">
+            {variantes.map((v) => {
+              const selecionada = varianteSelecionada?.id === v.id;
+              const esgotada = v.estoque <= 0;
+              return (
+                <button
+                  key={v.id}
+                  type="button"
+                  onClick={() => {
+                    setVarianteSelecionada(v);
+                    setQuantidade(1);
+                  }}
+                  disabled={esgotada}
+                  className={`px-4 py-2 rounded-lg border text-sm font-semibold transition-all ${
+                    selecionada
+                      ? "border-[#6B2D8B] bg-[#6B2D8B] text-white shadow-md"
+                      : esgotada
+                      ? "border-gray-200 text-gray-300 cursor-not-allowed line-through"
+                      : "border-gray-200 text-gray-700 hover:border-[#6B2D8B] hover:text-[#6B2D8B]"
+                  }`}
+                >
+                  {v.nome}
+                  {esgotada && <span className="ml-1 text-[10px] font-normal">(esgotado)</span>}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
+      {/* Preço da variante selecionada */}
+      {temVariantes && (
+        <div className="mb-5">
+          {precoAtivo ? (
+            <div className="flex items-baseline gap-2">
+              <p className="text-4xl font-bold text-[#6B2D8B]">{formatCurrency(precoAtivo)}</p>
+              <p className="text-sm text-gray-500 font-medium">à vista</p>
+            </div>
+          ) : (
+            <p className="text-2xl font-bold text-[#D4A017] uppercase tracking-widest">
+              Sob Consulta
+            </p>
+          )}
+        </div>
+      )}
+
+      {/* Favorito */}
       <div className="flex justify-end mb-2">
         <BotaoFavorito produtoId={produtoId} size="md" />
       </div>
 
-      {/* Quantity selector */}
-      <SeletorQuantidade estoque={estoque} onQuantidadeChange={setQuantidade} />
+      {/* Seletor de quantidade */}
+      <SeletorQuantidade estoque={estoqueAtivo} onQuantidadeChange={setQuantidade} />
 
-      {/* High Converting CTA */}
+      {/* CTA */}
       <div className="mt-8 flex flex-col gap-4">
         {semEstoque ? (
           <button
@@ -56,7 +128,6 @@ export function ProdutoDetalhesClient({ produtoId, produtoNome, produtoCodigo, e
             <div className="absolute inset-0 h-full w-full bg-white/20 -translate-x-full group-hover:animate-[shimmer_1.5s_infinite] z-0" />
           </a>
         )}
-        
       </div>
     </div>
   );

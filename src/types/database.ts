@@ -107,3 +107,15 @@ export type Categoria = Database["public"]["Tables"]["categorias"]["Row"];
 export type Produto = Database["public"]["Tables"]["produtos"]["Row"];
 export type ProdutoInsert = Database["public"]["Tables"]["produtos"]["Insert"];
 export type ProdutoUpdate = Database["public"]["Tables"]["produtos"]["Update"];
+
+export interface ProdutoVariante {
+  id: string;
+  produto_id: string;
+  nome: string;
+  codigo: string;
+  preco: number | null;
+  estoque: number;
+  ativo: boolean;
+  ordem: number;
+  created_at: string;
+}

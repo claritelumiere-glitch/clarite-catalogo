@@ -3,7 +3,7 @@ import { formatCurrency } from "@/lib/utils";
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import type { Metadata } from "next";
-import type { Produto, Categoria } from "@/types/database";
+import type { Produto, Categoria, ProdutoVariante } from "@/types/database";
 import { GaleriaImagens } from "@/components/catalogo/GaleriaImagens";
 import { ProdutoDetalhesClient } from "@/components/catalogo/ProdutoDetalhesClient";
 
@@ -41,8 +41,20 @@ export default async function ProdutoPage({ params }: PageProps) {
 
   const produto = data as unknown as ProdutoComCategoria;
   const categoria = produto.categorias;
-  const { data: { session } } = await supabase.auth.getSession();
+
+  const [{ data: { session } }, { data: variantesRaw }] = await Promise.all([
+    supabase.auth.getSession(),
+    supabase
+      .from("produto_variantes")
+      .select("*")
+      .eq("produto_id", produto.id)
+      .eq("ativo", true)
+      .order("ordem"),
+  ]);
+
   const mostrarPreco = !!session;
+  const variantes = (variantesRaw ?? []) as ProdutoVariante[];
+  const temVariantes = variantes.length > 0;
   const caracteristicas = (produto.caracteristicas ?? {}) as Record<string, string>;
   const temCaracteristicas = Object.keys(caracteristicas).length > 0;
 
@@ -95,7 +107,7 @@ export default async function ProdutoPage({ params }: PageProps) {
             </div>
           </div>
 
-          {mostrarPreco ? (
+          {mostrarPreco && !temVariantes ? (
             produto.preco ? (
               <div className="mt-6 mb-2">
                 <p className="text-xs text-gray-400 font-medium uppercase tracking-widest mb-1">Investimento</p>
@@ -113,7 +125,7 @@ export default async function ProdutoPage({ params }: PageProps) {
                 </p>
               </div>
             )
-          ) : (
+          ) : !mostrarPreco ? (
             <div className="mt-6 mb-4 p-5 border border-dashed border-[#6B2D8B]/30 rounded-xl bg-purple-50/50 text-center">
               <div className="flex justify-center mb-2">
                 <svg className="w-7 h-7 text-[#9B2C8A]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -146,6 +158,8 @@ export default async function ProdutoPage({ params }: PageProps) {
               produtoNome={produto.nome}
               produtoCodigo={produto.codigo}
               estoque={produto.estoque ?? 0}
+              preco={produto.preco}
+              variantes={temVariantes ? variantes : undefined}
             />
           )}
 

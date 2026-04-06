@@ -9,6 +9,7 @@ import { slugify } from "@/lib/utils";
 import { produtoSchema, validateImageFile } from "@/lib/validations/produto";
 import type { Categoria } from "@/types/database";
 import { EditorCaracteristicas } from "@/components/admin/EditorCaracteristicas";
+import { EditorVariantes, type VarianteLocal } from "@/components/admin/EditorVariantes";
 
 export default function NovoProdutoPage() {
   const router = useRouter();
@@ -18,6 +19,7 @@ export default function NovoProdutoPage() {
   const [uploadingImages, setUploadingImages] = useState(false);
   const [imagensUrls, setImagensUrls] = useState<string[]>([]);
   const [caracteristicas, setCaracteristicas] = useState<Record<string, string>>({});
+  const [variantes, setVariantes] = useState<VarianteLocal[]>([]);
 
   useEffect(() => {
     const supabase = createClient();
@@ -91,11 +93,10 @@ export default function NovoProdutoPage() {
     const supabase = createClient();
     const slug = slugify(result.data.nome);
 
-    const { error: insertError } = await (supabase.from("produtos") as any).insert({
-      ...result.data,
-      slug,
-      imagens: imagensUrls,
-    });
+    const { data: novoProduto, error: insertError } = await (supabase.from("produtos") as any)
+      .insert({ ...result.data, slug, imagens: imagensUrls })
+      .select()
+      .single();
 
     if (insertError) {
       if (insertError.code === "23505") {
@@ -105,6 +106,24 @@ export default function NovoProdutoPage() {
       }
       setLoading(false);
       return;
+    }
+
+    // Salva variantes se houver
+    if (novoProduto && variantes.length > 0) {
+      const variantesValidas = variantes.filter((v) => v.nome.trim() && v.codigo.trim());
+      if (variantesValidas.length > 0) {
+        await (supabase.from("produto_variantes") as any).insert(
+          variantesValidas.map((v, i) => ({
+            produto_id: novoProduto.id,
+            nome: v.nome.trim(),
+            codigo: v.codigo.trim(),
+            preco: v.preco ? parseFloat(v.preco) : null,
+            estoque: v.estoque,
+            ativo: v.ativo,
+            ordem: i,
+          }))
+        );
+      }
     }
 
     router.push("/admin/produtos");
@@ -174,6 +193,9 @@ export default function NovoProdutoPage() {
 
         {/* Caracteristicas */}
         <EditorCaracteristicas valor={caracteristicas} onChange={setCaracteristicas} />
+
+        {/* Variantes */}
+        <EditorVariantes onChange={setVariantes} />
 
         {/* Images */}
         <div>

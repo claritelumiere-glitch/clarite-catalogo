@@ -54,6 +54,25 @@ export default async function CatalogoPage({ searchParams }: PageProps) {
   const produtos = (produtosRaw ?? []) as unknown as (Produto & { categorias: Categoria | null })[];
   const mostrarPreco = !!sessionData?.session;
 
+  // Busca preço mínimo por produto das variantes (uma query só)
+  const produtoIds = produtos.map((p) => p.id);
+  let precosVariantes: Record<string, number> = {};
+  if (produtoIds.length > 0) {
+    const { data: variantesPrecos } = await supabase
+      .from("produto_variantes")
+      .select("produto_id, preco")
+      .in("produto_id", produtoIds)
+      .eq("ativo", true)
+      .not("preco", "is", null);
+    if (variantesPrecos) {
+      for (const v of variantesPrecos as { produto_id: string; preco: number }[]) {
+        if (!precosVariantes[v.produto_id] || v.preco < precosVariantes[v.produto_id]) {
+          precosVariantes[v.produto_id] = v.preco;
+        }
+      }
+    }
+  }
+
   return (
     <div className="max-w-7xl mx-auto px-4 py-8">
       {/* Persuasive Banner */}
@@ -150,6 +169,7 @@ export default async function CatalogoPage({ searchParams }: PageProps) {
                             produto={produto}
                             categoria={produto.categorias}
                             mostrarPreco={mostrarPreco}
+                            precoVarianteMin={precosVariantes[produto.id]}
                           />
                         ))}
                       </div>

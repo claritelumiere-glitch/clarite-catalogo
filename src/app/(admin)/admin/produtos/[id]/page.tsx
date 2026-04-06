@@ -9,6 +9,7 @@ import { slugify } from "@/lib/utils";
 import { produtoSchema, validateImageFile } from "@/lib/validations/produto";
 import type { Categoria, Produto } from "@/types/database";
 import { EditorCaracteristicas } from "@/components/admin/EditorCaracteristicas";
+import { EditorVariantes } from "@/components/admin/EditorVariantes";
 
 interface PageProps {
   params: Promise<{ id: string }>;
@@ -284,6 +285,9 @@ export default function EditarProdutoPage({ params }: PageProps) {
 
         {/* Caracteristicas */}
         <EditorCaracteristicas valor={caracteristicas} onChange={setCaracteristicas} />
+
+        {/* Variantes */}
+        {produtoId && <EditorVariantes produtoId={produtoId} />}
 
         {/* Images */}
         <div>

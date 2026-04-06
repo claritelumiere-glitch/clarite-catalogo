@@ -10,9 +10,10 @@ interface ProdutoCardProps {
   produto: Produto;
   categoria?: Categoria | null;
   mostrarPreco?: boolean;
+  precoVarianteMin?: number;
 }
 
-export function ProdutoCard({ produto, categoria, mostrarPreco = true }: ProdutoCardProps) {
+export function ProdutoCard({ produto, categoria, mostrarPreco = true, precoVarianteMin }: ProdutoCardProps) {
   const primeiraImagem = produto.imagens?.[0];
   const semEstoque = (produto.estoque ?? 0) <= 0;
   
@@ -101,13 +102,20 @@ export function ProdutoCard({ produto, categoria, mostrarPreco = true }: Produto
             <div>
               <p className="text-[10px] text-gray-400 font-mono tracking-wider mb-1">REF: {produto.codigo.slice(0, 8)}</p>
               {mostrarPreco ? (
-                produto.preco ? (
+                precoVarianteMin != null ? (
+                  <div>
+                    <p className="text-[9px] text-gray-400 uppercase tracking-wider mb-0.5">a partir de</p>
+                    <p className="text-[#6B2D8B] font-bold text-base md:text-lg">
+                      {formatCurrency(precoVarianteMin)}
+                    </p>
+                  </div>
+                ) : produto.preco ? (
                   <p className="text-[#6B2D8B] font-bold text-base md:text-lg">
                     {formatCurrency(produto.preco)}
                   </p>
                 ) : (
                   <p className="text-[#D4A017] text-xs font-semibold uppercase tracking-wider">
-                    Sob Consulta
+                    Ver opções
                   </p>
                 )
               ) : (
