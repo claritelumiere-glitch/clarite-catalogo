@@ -17,9 +17,7 @@ export function ProdutoCard({ produto, categoria, mostrarPreco = true, precoVari
   const primeiraImagem = produto.imagens?.[0];
   const semEstoque = (produto.estoque ?? 0) <= 0;
   
-  // Fake scarcity logic based on ID string characters sum to be consistent per product
   const idHash = (produto.id || "123").split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
-  const isScarce = idHash % 7 === 0; // ~14% of products
   const starsCount = 4 + (idHash % 2 === 0 ? 1 : 0); // 4 or 5 stars
 
   return (
@@ -54,11 +52,6 @@ export function ProdutoCard({ produto, categoria, mostrarPreco = true, precoVari
             {produto.destaque && (
               <div className="bg-gradient-to-r from-[#D4A017] to-[#E8C547] text-white text-[10px] font-bold uppercase tracking-widest px-3 py-1.5 rounded shadow-md">
                 Mais Vendido
-              </div>
-            )}
-            {isScarce && !semEstoque && (
-              <div className="bg-[#C2185B] text-white text-[10px] font-bold uppercase tracking-widest px-3 py-1.5 rounded shadow-md animate-pulse">
-                Últimas Peças
               </div>
             )}
           </div>
