@@ -123,60 +123,34 @@ export default async function CatalogoPage({ searchParams }: PageProps) {
           </Suspense>
         </div>
 
-        {/* Products grouped by category */}
+        {/* Products — ordered by category then by name, single flat grid */}
         <div className="flex-1 min-w-0">
           {produtos && produtos.length > 0 ? (
-            <div className="space-y-12">
+            <>
               {(() => {
-                // Group products by category, following category order
-                const porCategoria = new Map<string, { categoria: Categoria | null; produtos: typeof produtos }>();
-
-                // Initialize groups in category order
-                for (const cat of categorias) {
-                  porCategoria.set(cat.id, { categoria: cat, produtos: [] });
-                }
-                // Group for products without category
-                porCategoria.set("sem-categoria", { categoria: null, produtos: [] });
-
-                for (const p of produtos) {
-                  const key = p.categoria_id ?? "sem-categoria";
-                  const group = porCategoria.get(key);
-                  if (group) {
-                    group.produtos.push(p);
-                  } else {
-                    // Category exists but wasn't in active list
-                    porCategoria.set(key, { categoria: p.categorias, produtos: [p] });
-                  }
-                }
-
-                return Array.from(porCategoria.values())
-                  .filter((g) => g.produtos.length > 0)
-                  .map((group) => (
-                    <section key={group.categoria?.id ?? "sem-categoria"}>
-                      <div className="flex items-center gap-3 mb-5">
-                        <h2 className="font-serif text-xl font-bold text-gray-800 tracking-tight">
-                          {group.categoria?.nome ?? "Outros"}
-                        </h2>
-                        <div className="flex-1 h-px bg-gradient-to-r from-[#6B2D8B]/20 to-transparent"></div>
-                        <span className="text-xs text-gray-400 font-medium">
-                          {group.produtos.length} {group.produtos.length === 1 ? "item" : "itens"}
-                        </span>
-                      </div>
-                      <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-4">
-                        {group.produtos.map((produto) => (
-                          <ProdutoCard
-                            key={produto.id}
-                            produto={produto}
-                            categoria={produto.categorias}
-                            mostrarPreco={mostrarPreco}
-                            precoVarianteMin={precosVariantes[produto.id]}
-                          />
-                        ))}
-                      </div>
-                    </section>
-                  ));
+                // Sort products: follow category order (from sidebar), then by name within category
+                const catOrdem = new Map(categorias.map((c, i) => [c.id, i]));
+                const ordenados = [...produtos].sort((a, b) => {
+                  const oa = catOrdem.get(a.categoria_id ?? "") ?? 9999;
+                  const ob = catOrdem.get(b.categoria_id ?? "") ?? 9999;
+                  if (oa !== ob) return oa - ob;
+                  return a.nome.localeCompare(b.nome);
+                });
+                return (
+                  <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-4">
+                    {ordenados.map((produto) => (
+                      <ProdutoCard
+                        key={produto.id}
+                        produto={produto}
+                        categoria={produto.categorias}
+                        mostrarPreco={mostrarPreco}
+                        precoVarianteMin={precosVariantes[produto.id]}
+                      />
+                    ))}
+                  </div>
+                );
               })()}
-            </div>
+            </>
           ) : (
             <div className="text-center py-20 text-gray-400">
               <p className="font-serif text-lg">Nenhum produto encontrado</p>
