@@ -46,12 +46,22 @@ export default function ClientLoginPage() {
         return;
       }
     } else {
-      const { error: authError } = await supabase.auth.signUp({
-        email: result.data.email,
-        password: result.data.password,
+      // Usa rota de API com service role para criar usuário já confirmado (sem email)
+      const res = await fetch("/api/auth/signup", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: result.data.email, password: result.data.password }),
       });
-      if (authError) {
-        setError(authError.message);
+      const json = await res.json();
+      if (!res.ok) {
+        setError(json.error ?? "Erro ao criar conta.");
+        setLoading(false);
+        return;
+      }
+      // Faz login automaticamente após cadastro
+      const { error: loginError } = await supabase.auth.signInWithPassword(result.data);
+      if (loginError) {
+        setError("Conta criada! Agora faça login.");
         setLoading(false);
         return;
       }
