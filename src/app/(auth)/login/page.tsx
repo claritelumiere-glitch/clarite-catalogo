@@ -13,7 +13,7 @@ const loginSchema = z.object({
 });
 
 export default function ClientLoginPage() {
-  const [isLogin, setIsLogin] = useState(true);
+  const [isLogin, setIsLogin] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
@@ -70,7 +70,7 @@ export default function ClientLoginPage() {
       {/* Subtle gold particles effect */}
       <div className="absolute inset-0 z-0 opacity-20 bg-[radial-gradient(1px_1px_at_20px_30px,rgba(212,160,23,0.4)_1px,transparent_0),radial-gradient(1px_1px_at_40px_70px,rgba(232,197,71,0.3)_1px,transparent_0),radial-gradient(1px_1px_at_80px_10px,rgba(255,255,255,0.3)_1px,transparent_0)] bg-[size:100px_100px] pointer-events-none mix-blend-screen"></div>
 
-      <div className="relative z-10 glassmorphism bg-white/10 backdrop-blur-xl border border-white/20 rounded-2xl shadow-2xl w-full max-w-sm p-10">
+      <div className="relative z-10 bg-black/85 backdrop-blur-xl border border-white/10 rounded-2xl shadow-2xl w-full max-w-sm p-10">
         {/* Logo */}
         <div className="flex flex-col items-center mb-8">
           <Link href="/">
@@ -146,7 +146,7 @@ export default function ClientLoginPage() {
             disabled={loading}
             className="group relative overflow-hidden w-full text-center font-bold uppercase tracking-[0.15em] py-3.5 px-6 rounded-lg bg-gradient-to-r from-[#6B2D8B] to-[#C2185B] text-white shadow-lg hover:shadow-purple-dark/50 transition-all duration-300 transform hover:-translate-y-1 mt-6 border border-white/10"
           >
-            <span className="relative z-10">{loading ? "Aguarde..." : (isLogin ? "Entrar" : "Criar Conta")}</span>
+            <span className="relative z-10">{loading ? "Aguarde..." : (isLogin ? "Entrar" : "Criar Conta Grátis")}</span>
             <div className="absolute inset-0 h-full w-full bg-white/20 -translate-x-full group-hover:animate-[shimmer_1.5s_infinite] z-0" />
           </button>
         </form>
@@ -157,7 +157,7 @@ export default function ClientLoginPage() {
             onClick={() => { setIsLogin(!isLogin); setError(null); }}
             className="text-xs text-gray-300 hover:text-[#D4A017] transition-colors font-medium border-b border-transparent hover:border-[#D4A017]"
           >
-            {isLogin ? "Não tem conta? Cadastre-se" : "Já tem conta? Fazer login"}
+            {isLogin ? "Não tem conta? Cadastre-se" : "Já tem conta? Fazer Login"}
           </button>
         </div>
       </div>
