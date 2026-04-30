@@ -117,5 +117,6 @@ export interface ProdutoVariante {
   estoque: number;
   ativo: boolean;
   ordem: number;
+  imagem: string | null;
   created_at: string;
 }

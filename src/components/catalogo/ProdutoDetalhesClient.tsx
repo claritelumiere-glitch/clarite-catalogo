@@ -13,6 +13,8 @@ interface ProdutoDetalhesClientProps {
   estoque: number;
   preco?: number | null;
   variantes?: ProdutoVariante[];
+  varianteSelecionada?: ProdutoVariante | null;
+  onVarianteChange?: (v: ProdutoVariante) => void;
 }
 
 export function ProdutoDetalhesClient({
@@ -22,11 +24,19 @@ export function ProdutoDetalhesClient({
   estoque,
   preco,
   variantes = [],
+  varianteSelecionada: varianteControlada,
+  onVarianteChange,
 }: ProdutoDetalhesClientProps) {
   const temVariantes = variantes.length > 0;
-  const [varianteSelecionada, setVarianteSelecionada] = useState<ProdutoVariante | null>(
-    temVariantes ? variantes[0] : null
-  );
+  const varianteInicial = temVariantes
+    ? (variantes.filter(v => v.estoque > 0 && v.preco != null).sort((a, b) => (a.preco ?? 0) - (b.preco ?? 0))[0] ?? variantes[0])
+    : null;
+  const [varianteInternaState, setVarianteInternaState] = useState<ProdutoVariante | null>(varianteInicial);
+  const varianteSelecionada = varianteControlada !== undefined ? varianteControlada : varianteInternaState;
+  const setVarianteSelecionada = (v: ProdutoVariante) => {
+    if (onVarianteChange) onVarianteChange(v);
+    else setVarianteInternaState(v);
+  };
   const [quantidade, setQuantidade] = useState(1);
 
   const estoqueAtivo = temVariantes ? (varianteSelecionada?.estoque ?? 0) : estoque;

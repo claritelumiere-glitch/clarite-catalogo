@@ -1,4 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
+/* eslint-disable @next/next/no-img-element */
 "use client";
 
 import { useState, useEffect } from "react";
@@ -12,6 +13,7 @@ export interface VarianteLocal {
   estoque: number;
   ativo: boolean;
   ordem: number;
+  imagem: string | null;
 }
 
 interface EditorVariantesProps {
@@ -26,6 +28,7 @@ const vazia = (ordem: number): VarianteLocal => ({
   estoque: 0,
   ativo: true,
   ordem,
+  imagem: null,
 });
 
 export function EditorVariantes({ produtoId, onChange }: EditorVariantesProps) {
@@ -54,13 +57,38 @@ export function EditorVariantes({ produtoId, onChange }: EditorVariantesProps) {
               estoque: v.estoque,
               ativo: v.ativo,
               ordem: v.ordem,
+              imagem: v.imagem ?? null,
             }))
           );
         }
       });
   }, [produtoId]);
 
-  function update(index: number, field: keyof VarianteLocal, value: string | number | boolean) {
+  async function uploadImagem(index: number, file: File) {
+    setError(null);
+    if (!file.type.startsWith("image/")) {
+      setError("Arquivo precisa ser uma imagem.");
+      return;
+    }
+    if (file.size > 5 * 1024 * 1024) {
+      setError("Imagem maior que 5MB.");
+      return;
+    }
+    const supabase = createClient();
+    const ext = file.name.split(".").pop();
+    const fileName = `variantes/${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
+    const { error: uploadError } = await supabase.storage
+      .from("imagens")
+      .upload(fileName, file, { cacheControl: "31536000", upsert: false });
+    if (uploadError) {
+      setError(`Erro ao fazer upload: ${uploadError.message}`);
+      return;
+    }
+    const { data } = supabase.storage.from("imagens").getPublicUrl(fileName);
+    update(index, "imagem", data.publicUrl);
+  }
+
+  function update(index: number, field: keyof VarianteLocal, value: string | number | boolean | null) {
     const updated = variantes.map((v, i) => (i === index ? { ...v, [field]: value } : v));
     setVariantes(updated);
     onChange?.(updated);
@@ -91,6 +119,7 @@ export function EditorVariantes({ produtoId, onChange }: EditorVariantesProps) {
       estoque: v.estoque,
       ativo: v.ativo,
       ordem: index,
+      imagem: v.imagem,
     };
 
     if (v.id) {
@@ -203,6 +232,38 @@ export function EditorVariantes({ produtoId, onChange }: EditorVariantesProps) {
                     value={v.estoque}
                     onChange={(e) => update(i, "estoque", parseInt(e.target.value) || 0)}
                     className="w-full border border-gray-200 rounded px-2.5 py-1.5 text-sm focus:outline-none focus:border-[#6B2D8B] bg-white"
+                  />
+                </div>
+              </div>
+
+              {/* Imagem da variante */}
+              <div className="mb-3">
+                <label className="block text-[10px] font-medium text-gray-500 mb-1">Imagem da variante</label>
+                <div className="flex items-center gap-3">
+                  {v.imagem ? (
+                    <div className="relative w-16 h-16 rounded border border-gray-200 overflow-hidden bg-white flex-shrink-0">
+                      <img src={v.imagem} alt="" className="w-full h-full object-cover" />
+                      <button
+                        type="button"
+                        onClick={() => update(i, "imagem", null)}
+                        className="absolute top-0 right-0 bg-red-500 text-white w-4 h-4 flex items-center justify-center text-xs rounded-bl"
+                        aria-label="Remover imagem"
+                      >×</button>
+                    </div>
+                  ) : (
+                    <div className="w-16 h-16 rounded border border-dashed border-gray-300 bg-white flex items-center justify-center text-[10px] text-gray-400 flex-shrink-0">
+                      Sem foto
+                    </div>
+                  )}
+                  <input
+                    type="file"
+                    accept="image/jpeg,image/png,image/webp"
+                    onChange={(e) => {
+                      const f = e.target.files?.[0];
+                      if (f) uploadImagem(i, f);
+                      e.target.value = "";
+                    }}
+                    className="text-xs text-gray-500 file:mr-2 file:py-1 file:px-2 file:rounded file:border-0 file:text-[10px] file:bg-[#6B2D8B] file:text-white hover:file:bg-[#9B2C8A] file:cursor-pointer"
                   />
                 </div>
               </div>
