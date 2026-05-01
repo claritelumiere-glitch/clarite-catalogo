@@ -2,7 +2,7 @@
 /* eslint-disable @next/next/no-img-element */
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 
 export interface VarianteLocal {
@@ -17,8 +17,9 @@ export interface VarianteLocal {
 }
 
 interface EditorVariantesProps {
-  produtoId?: string; // se fornecido, salva no banco diretamente
-  onChange?: (variantes: VarianteLocal[]) => void; // para novo produto (state only)
+  variantes: VarianteLocal[];
+  onChange: (variantes: VarianteLocal[]) => void;
+  onMarkDelete?: (id: string) => void;
 }
 
 const vazia = (ordem: number): VarianteLocal => ({
@@ -31,38 +32,9 @@ const vazia = (ordem: number): VarianteLocal => ({
   imagem: null,
 });
 
-export function EditorVariantes({ produtoId, onChange }: EditorVariantesProps) {
-  const [variantes, setVariantes] = useState<VarianteLocal[]>([]);
-  const [loading, setLoading] = useState(false);
-  const [savingId, setSavingId] = useState<string | null>(null);
+export function EditorVariantes({ variantes, onChange, onMarkDelete }: EditorVariantesProps) {
   const [error, setError] = useState<string | null>(null);
-
-  // Carrega variantes do banco se estiver editando um produto existente
-  useEffect(() => {
-    if (!produtoId) return;
-    const supabase = createClient();
-    supabase
-      .from("produto_variantes")
-      .select("*")
-      .eq("produto_id", produtoId)
-      .order("ordem")
-      .then(({ data }) => {
-        if (data) {
-          setVariantes(
-            data.map((v: any) => ({
-              id: v.id,
-              nome: v.nome,
-              codigo: v.codigo,
-              preco: v.preco != null ? String(v.preco) : "",
-              estoque: v.estoque,
-              ativo: v.ativo,
-              ordem: v.ordem,
-              imagem: v.imagem ?? null,
-            }))
-          );
-        }
-      });
-  }, [produtoId]);
+  const [uploadingIndex, setUploadingIndex] = useState<number | null>(null);
 
   async function uploadImagem(index: number, file: File) {
     setError(null);
@@ -74,6 +46,7 @@ export function EditorVariantes({ produtoId, onChange }: EditorVariantesProps) {
       setError("Imagem maior que 5MB.");
       return;
     }
+    setUploadingIndex(index);
     const supabase = createClient();
     const ext = file.name.split(".").pop();
     const fileName = `variantes/${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
@@ -82,76 +55,29 @@ export function EditorVariantes({ produtoId, onChange }: EditorVariantesProps) {
       .upload(fileName, file, { cacheControl: "31536000", upsert: false });
     if (uploadError) {
       setError(`Erro ao fazer upload: ${uploadError.message}`);
+      setUploadingIndex(null);
       return;
     }
     const { data } = supabase.storage.from("imagens").getPublicUrl(fileName);
     update(index, "imagem", data.publicUrl);
+    setUploadingIndex(null);
   }
 
   function update(index: number, field: keyof VarianteLocal, value: string | number | boolean | null) {
     const updated = variantes.map((v, i) => (i === index ? { ...v, [field]: value } : v));
-    setVariantes(updated);
-    onChange?.(updated);
+    onChange(updated);
   }
 
   function adicionar() {
-    const updated = [...variantes, vazia(variantes.length)];
-    setVariantes(updated);
-    onChange?.(updated);
+    onChange([...variantes, vazia(variantes.length)]);
   }
 
-  async function salvarVariante(index: number) {
-    if (!produtoId) return;
+  function excluir(index: number) {
     const v = variantes[index];
-    if (!v.nome.trim() || !v.codigo.trim()) {
-      setError("Nome e código são obrigatórios.");
-      return;
+    if (v.id && onMarkDelete) {
+      onMarkDelete(v.id);
     }
-    setError(null);
-    setSavingId(v.id ?? `new-${index}`);
-
-    const supabase = createClient();
-    const payload = {
-      produto_id: produtoId,
-      nome: v.nome.trim(),
-      codigo: v.codigo.trim(),
-      preco: v.preco ? parseFloat(v.preco) : null,
-      estoque: v.estoque,
-      ativo: v.ativo,
-      ordem: index,
-      imagem: v.imagem,
-    };
-
-    if (v.id) {
-      await (supabase.from("produto_variantes") as any).update(payload).eq("id", v.id);
-    } else {
-      const { data } = await (supabase.from("produto_variantes") as any)
-        .insert(payload)
-        .select()
-        .single();
-      if (data) {
-        const updated = variantes.map((item, i) =>
-          i === index ? { ...item, id: data.id } : item
-        );
-        setVariantes(updated);
-        onChange?.(updated);
-      }
-    }
-    setSavingId(null);
-  }
-
-  async function excluirVariante(index: number) {
-    const v = variantes[index];
-    if (v.id && produtoId) {
-      if (!window.confirm("Excluir esta variante?")) return;
-      setLoading(true);
-      const supabase = createClient();
-      await supabase.from("produto_variantes").delete().eq("id", v.id);
-      setLoading(false);
-    }
-    const updated = variantes.filter((_, i) => i !== index);
-    setVariantes(updated);
-    onChange?.(updated);
+    onChange(variantes.filter((_, i) => i !== index));
   }
 
   return (
@@ -178,14 +104,13 @@ export function EditorVariantes({ produtoId, onChange }: EditorVariantesProps) {
 
       {variantes.length === 0 ? (
         <div className="border border-dashed border-gray-200 rounded-lg px-4 py-5 text-center text-xs text-gray-400">
-          Nenhuma variante. Clique em "+ Adicionar" para criar modelos diferentes do mesmo produto.
+          Nenhuma variante. Clique em &quot;+ Adicionar&quot; para criar modelos diferentes do mesmo produto.
         </div>
       ) : (
         <div className="space-y-3">
           {variantes.map((v, i) => (
-            <div key={v.id ?? i} className="bg-gray-50 border border-gray-200 rounded-lg p-4">
+            <div key={v.id ?? `new-${i}`} className="bg-gray-50 border border-gray-200 rounded-lg p-4">
               <div className="grid grid-cols-2 gap-3 mb-3">
-                {/* Nome da variante */}
                 <div>
                   <label className="block text-[10px] font-medium text-gray-500 mb-1">Nome *</label>
                   <input
@@ -197,7 +122,6 @@ export function EditorVariantes({ produtoId, onChange }: EditorVariantesProps) {
                     className="w-full border border-gray-200 rounded px-2.5 py-1.5 text-sm focus:outline-none focus:border-[#6B2D8B] bg-white"
                   />
                 </div>
-                {/* Código */}
                 <div>
                   <label className="block text-[10px] font-medium text-gray-500 mb-1">Código *</label>
                   <input
@@ -209,7 +133,6 @@ export function EditorVariantes({ produtoId, onChange }: EditorVariantesProps) {
                     className="w-full border border-gray-200 rounded px-2.5 py-1.5 text-sm focus:outline-none focus:border-[#6B2D8B] bg-white"
                   />
                 </div>
-                {/* Preço */}
                 <div>
                   <label className="block text-[10px] font-medium text-gray-500 mb-1">Preço (R$)</label>
                   <input
@@ -222,7 +145,6 @@ export function EditorVariantes({ produtoId, onChange }: EditorVariantesProps) {
                     className="w-full border border-gray-200 rounded px-2.5 py-1.5 text-sm focus:outline-none focus:border-[#6B2D8B] bg-white"
                   />
                 </div>
-                {/* Estoque */}
                 <div>
                   <label className="block text-[10px] font-medium text-gray-500 mb-1">Estoque</label>
                   <input
@@ -236,7 +158,6 @@ export function EditorVariantes({ produtoId, onChange }: EditorVariantesProps) {
                 </div>
               </div>
 
-              {/* Imagem da variante */}
               <div className="mb-3">
                 <label className="block text-[10px] font-medium text-gray-500 mb-1">Imagem da variante</label>
                 <div className="flex items-center gap-3">
@@ -265,6 +186,7 @@ export function EditorVariantes({ produtoId, onChange }: EditorVariantesProps) {
                     }}
                     className="text-xs text-gray-500 file:mr-2 file:py-1 file:px-2 file:rounded file:border-0 file:text-[10px] file:bg-[#6B2D8B] file:text-white hover:file:bg-[#9B2C8A] file:cursor-pointer"
                   />
+                  {uploadingIndex === i && <span className="text-[10px] text-gray-400">Enviando...</span>}
                 </div>
               </div>
 
@@ -279,26 +201,13 @@ export function EditorVariantes({ produtoId, onChange }: EditorVariantesProps) {
                   Ativa
                 </label>
 
-                <div className="flex gap-2">
-                  <button
-                    type="button"
-                    onClick={() => excluirVariante(i)}
-                    disabled={loading}
-                    className="text-xs text-red-400 hover:text-red-600 transition-colors"
-                  >
-                    Excluir
-                  </button>
-                  {produtoId && (
-                    <button
-                      type="button"
-                      onClick={() => salvarVariante(i)}
-                      disabled={savingId !== null}
-                      className="text-xs bg-[#6B2D8B] text-white px-3 py-1 rounded hover:bg-[#9B2C8A] disabled:opacity-60 transition-colors"
-                    >
-                      {savingId === (v.id ?? `new-${i}`) ? "Salvando..." : "Salvar"}
-                    </button>
-                  )}
-                </div>
+                <button
+                  type="button"
+                  onClick={() => excluir(i)}
+                  className="text-xs text-red-400 hover:text-red-600 transition-colors"
+                >
+                  Excluir
+                </button>
               </div>
             </div>
           ))}

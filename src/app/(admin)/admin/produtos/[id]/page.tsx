@@ -9,7 +9,7 @@ import { slugify } from "@/lib/utils";
 import { produtoSchema, validateImageFile } from "@/lib/validations/produto";
 import type { Categoria, Produto } from "@/types/database";
 import { EditorCaracteristicas } from "@/components/admin/EditorCaracteristicas";
-import { EditorVariantes } from "@/components/admin/EditorVariantes";
+import { EditorVariantes, type VarianteLocal } from "@/components/admin/EditorVariantes";
 
 interface PageProps {
   params: Promise<{ id: string }>;
@@ -26,6 +26,8 @@ export default function EditarProdutoPage({ params }: PageProps) {
   const [imagensUrls, setImagensUrls] = useState<string[]>([]);
   const [caracteristicas, setCaracteristicas] = useState<Record<string, string>>({});
   const [produtoId, setProdutoId] = useState<string | null>(null);
+  const [variantes, setVariantes] = useState<VarianteLocal[]>([]);
+  const [variantesExcluidas, setVariantesExcluidas] = useState<string[]>([]);
 
   useEffect(() => {
     params.then(({ id }) => setProdutoId(id));
@@ -39,7 +41,8 @@ export default function EditarProdutoPage({ params }: PageProps) {
     Promise.all([
       supabase.from("produtos").select("*").eq("id", produtoId).single(),
       supabase.from("categorias").select("*").eq("ativo", true).order("nome"),
-    ]).then(([{ data: produtoData }, { data: categoriasData }]) => {
+      supabase.from("produto_variantes").select("*").eq("produto_id", produtoId).order("ordem"),
+    ]).then(([{ data: produtoData }, { data: categoriasData }, { data: variantesData }]) => {
       if (produtoData) {
         const p = produtoData as unknown as Produto;
         setProduto(p);
@@ -47,9 +50,27 @@ export default function EditarProdutoPage({ params }: PageProps) {
         setCaracteristicas((p.caracteristicas as Record<string, string>) ?? {});
       }
       setCategorias((categoriasData ?? []) as unknown as Categoria[]);
+      if (variantesData) {
+        setVariantes(
+          (variantesData as any[]).map((v) => ({
+            id: v.id,
+            nome: v.nome,
+            codigo: v.codigo,
+            preco: v.preco != null ? String(v.preco) : "",
+            estoque: v.estoque,
+            ativo: v.ativo,
+            ordem: v.ordem,
+            imagem: v.imagem ?? null,
+          }))
+        );
+      }
       setLoadingData(false);
     });
   }, [produtoId]);
+
+  function marcarVarianteExcluida(id: string) {
+    setVariantesExcluidas((prev) => (prev.includes(id) ? prev : [...prev, id]));
+  }
 
   async function handleImageUpload(files: FileList) {
     setUploadingImages(true);
@@ -133,6 +154,59 @@ export default function EditarProdutoPage({ params }: PageProps) {
       }
       setLoading(false);
       return;
+    }
+
+    // Persistir variantes: insere novas, atualiza existentes, exclui marcadas
+    const variantesValidas = variantes.filter((v) => v.nome.trim() && v.codigo.trim());
+
+    if (variantesExcluidas.length > 0) {
+      await supabase.from("produto_variantes").delete().in("id", variantesExcluidas);
+    }
+
+    const novas = variantesValidas
+      .map((v, i) => ({ v, ordem: i }))
+      .filter(({ v }) => !v.id);
+    const existentes = variantesValidas
+      .map((v, i) => ({ v, ordem: i }))
+      .filter(({ v }) => v.id);
+
+    if (novas.length > 0) {
+      const { error: insertVarErr } = await (supabase.from("produto_variantes") as any).insert(
+        novas.map(({ v, ordem }) => ({
+          produto_id: produtoId,
+          nome: v.nome.trim(),
+          codigo: v.codigo.trim(),
+          preco: v.preco ? parseFloat(v.preco) : null,
+          estoque: v.estoque,
+          ativo: v.ativo,
+          ordem,
+          imagem: v.imagem,
+        }))
+      );
+      if (insertVarErr) {
+        setError("Erro ao salvar variantes novas. Tente novamente.");
+        setLoading(false);
+        return;
+      }
+    }
+
+    for (const { v, ordem } of existentes) {
+      const { error: updVarErr } = await (supabase.from("produto_variantes") as any)
+        .update({
+          nome: v.nome.trim(),
+          codigo: v.codigo.trim(),
+          preco: v.preco ? parseFloat(v.preco) : null,
+          estoque: v.estoque,
+          ativo: v.ativo,
+          ordem,
+          imagem: v.imagem,
+        })
+        .eq("id", v.id!);
+      if (updVarErr) {
+        setError("Erro ao atualizar variante. Tente novamente.");
+        setLoading(false);
+        return;
+      }
     }
 
     router.push("/admin/produtos");
@@ -287,7 +361,13 @@ export default function EditarProdutoPage({ params }: PageProps) {
         <EditorCaracteristicas valor={caracteristicas} onChange={setCaracteristicas} />
 
         {/* Variantes */}
-        {produtoId && <EditorVariantes produtoId={produtoId} />}
+        {produtoId && (
+          <EditorVariantes
+            variantes={variantes}
+            onChange={setVariantes}
+            onMarkDelete={marcarVarianteExcluida}
+          />
+        )}
 
         {/* Images */}
         <div>

@@ -121,6 +121,7 @@ export default function NovoProdutoPage() {
             estoque: v.estoque,
             ativo: v.ativo,
             ordem: i,
+            imagem: v.imagem,
           }))
         );
       }
@@ -195,7 +196,7 @@ export default function NovoProdutoPage() {
         <EditorCaracteristicas valor={caracteristicas} onChange={setCaracteristicas} />
 
         {/* Variantes */}
-        <EditorVariantes onChange={setVariantes} />
+        <EditorVariantes variantes={variantes} onChange={setVariantes} />
 
         {/* Images */}
         <div>
